@@ -1,0 +1,233 @@
+https://www.youtube.com/watch?v=Xpk82bWEBbw
+
+Docker Compose environment variables env_file .env
+
+Environment variables
+        │
+        ├── .env              ← file containing variables
+        │
+        ├── env_file          ← Compose loads the file
+        │
+        └── $VARIABLE         ← shell accesses a variable
+---
+
+.env defines configuration. init.sh will use that configuration to actually create things in MariaDB.
+
+---
+
+srcs/.env
+    │
+    │ MYSQL_DATABASE=wordpress
+    │ MYSQL_USER=wpuser
+    ▼
+docker-compose.yml
+    │
+    │ env_file: .env
+    ▼
+MariaDB container
+
+
+---
+
+.env
+  ↓
+docker-compose.yml
+  ↓
+MariaDB container
+  ↓
+MYSQL_DATABASE=wordpress
+MYSQL_USER=wpuser
+
+
+---
+
+What is .env?
+    .env is just a text file containing variables.
+
+    Your srcs/.env:
+        MYSQL_DATABASE=wordpress
+        MYSQL_USER=wpuser
+
+    means:
+        variable name       value
+        ────────────────────────────
+        MYSQL_DATABASE  =   wordpress
+        MYSQL_USER      =   wpuser
+
+    Think of it as a small configuration box 📦.
+
+Instead of hardcoding this everywhere:
+    MYSQL_DATABASE: wordpress
+    MYSQL_USER: wpuser
+
+    we keep the values in .env.
+
+---
+
+What does env_file: .env do?
+    In docker-compose.yml you added:
+        env_file:
+        - .env
+
+    You're telling Docker Compose:
+        "Take the variables from .env and put them inside this container."
+
+        srcs/.env
+        │
+        │  MYSQL_DATABASE=wordpress
+        │  MYSQL_USER=wpuser
+        │
+        ▼
+        docker-compose.yml
+        │
+        │  env_file:
+        │    - .env
+        │
+        ▼
+        MariaDB container
+        │
+        ├── MYSQL_DATABASE=wordpress
+        └── MYSQL_USER=wpuser
+
+    
+---
+
+init.sh will use them roughly like:
+    $MYSQL_DATABASE
+    $MYSQL_USER
+
+So instead of hardcoding:
+    CREATE DATABASE wordpress;
+
+we can eventually do something based on:
+    $MYSQL_DATABASE
+        ↓
+    "wordpress"
+
+Same idea for:
+    $MYSQL_USER
+        ↓
+    "wpuser"
+
+So the whole journey is:
+    .env
+    │
+    │ defines
+    ▼
+    MYSQL_DATABASE=wordpress
+    │
+    │ Docker Compose passes it
+    ▼
+    MariaDB container
+    │
+    │ init.sh reads it
+    ▼
+    Create database "wordpress"
+
+Why bother?
+    Because configuration stays separate from your code.
+
+    Your:
+    Dockerfile
+    init.sh
+    docker-compose.yml
+
+    don't need to be rewritten just because you change:
+        MYSQL_DATABASE=my_blog
+
+    The subject also explicitly requires using environment variables and a .env file.   
+
+    Remember:
+        .env stores configuration variables. 
+        Docker Compose passes them into the container, and programs/scripts inside the container can use them.
+
+---
+
+docker exec mariadb env
+
+    docker exec
+        ↓
+    Run a command INSIDE an already-running container
+
+    mariadb
+        ↓
+    The name of the container
+
+    env
+        ↓
+    The command to run inside it
+    Print all environment variables
+
+    ---
+    docker exec <container> <command>
+
+    docker exec mariadb env
+                ↑       ↑
+            container  command
+    ---
+
+    PATH=...           → where Linux searches for commands
+    HOSTNAME=...       → container's hostname
+    HOME=/nonexistent  → mysql user's home
+
+    MariaDB
+    ├── database: wordpress
+    └── database user: wpuser
+
+    ---
+
+    These are environment variables inside your MariaDB container. 
+    Think of them as little NAME=value settings attached to the container.
+
+    PATH             → where commands are searched 🔎
+        PATH tells Linux where to search for commands. For example, when your init.sh says: 
+            mariadbd
+
+        Linux searches those directories until it finds the mariadbd executable.
+            HOSTNAME=015b6cacd74f
+
+    HOSTNAME         → container's internal hostname
+        HOSTNAME is the container's internal hostname. 
+        Docker automatically generated 015b6cacd74f, based on the container ID. You didn't set this yourself.
+        
+    MYSQL_DATABASE   → your database name
+    MYSQL_USER       → your database username
+        These are your variables. They came from .env:
+            # srcs/.env
+
+            MYSQL_DATABASE=wordpress
+            MYSQL_USER=wpuser
+        
+        because you told Compose:
+            env_file:
+            - .env
+
+        Later your init.sh can use:
+            $MYSQL_DATABASE   # becomes "wordpress"
+            $MYSQL_USER       # becomes "wpuser"
+
+    HOME             → mysql Linux user's home setting
+        HOME normally tells Linux where the current user's home directory is.
+
+        Your container runs as:
+            USER mysql
+
+        The system mysql user isn't meant to be a normal human login account, 
+        so it doesn't need a normal home such as /home/mysql. 
+        Hence:
+            HOME=/nonexistent
+
+        
+---
+
+.env defines variables          ✅
+        ↓
+Compose passes them             ✅
+        ↓
+MariaDB container receives them ✅
+        ↓
+Docker secrets                  ⏭️
+        ↓
+init.sh uses variables          ⏭️
+        ↓
+create database + user          ⏭️

@@ -4,6 +4,8 @@ services:
     container_name: mariadb
     build:
       context: ./requirements/mariadb
+    env_file:
+      - .env
 
   wordpress:
     image: wordpress
@@ -19,7 +21,6 @@ services:
 
 
 # Each service then has its own Dockerfile:
-
 # docker-compose.yml
 #         │
 #         ├──────────────┐

@@ -540,7 +540,6 @@ tl;dr
     PID 1 → init.sh
               │
               └── mariadbd
-
   With:
     exec mariadbd
 
