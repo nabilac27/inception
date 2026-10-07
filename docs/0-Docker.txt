@@ -1,0 +1,264 @@
+What is Docker?
+- Docker lets you package an application together with everything 
+- it needs into an isolated environment called a container
+
+---
+
+Your computer / VM
+│
+└── Docker
+    ├── MariaDB container
+    ├── WordPress container
+    └── NGINX container
+
+---
+
+Dockerfile
+    ↓ docker build
+Image
+    ↓ docker run
+Container
+
+---
+
+Dockerfile = recipe
+
+    FROM debian:12
+    RUN apt-get install ...
+    COPY ...
+    ENTRYPOINT ...
+
+It says: "Here's how to construct my environment"
+
+---
+
+Image = built template.
+
+docker build -t wordpress-test .
+
+Think:
+    Dockerfile = recipe 📖
+    Image      = prepared blueprint 📦
+    Container  = running instance 🚀
+
+---
+
+Then there are volumes, which keep data outside the disposable container:
+
+    MariaDB container
+        ↕
+    Docker volume 💾
+
+Delete MariaDB container, recreate it, database survives.
+
+---
+
+And Docker Compose manages multiple containers together.
+
+instead of manually doing
+    start MariaDB
+    start WordPress
+    start NGINX
+    connect them
+    attach volumes
+    attach secrets
+
+then describe the whole system in:
+    docker-compose.yml
+
+---
+
+then
+    docker compose up
+
+brings up your whole architecture.
+
+
+---
+
+Inception mental model
+                    Docker Compose
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+       NGINX         WordPress       MariaDB
+      container       container      container
+          │              │              │
+        HTTPS          PHP-FPM       Database
+          │              │              │
+          └──────────────┴──────────────┘
+                    Docker network
+
+                         +
+                    Docker volumes
+                         ↓
+                  persistent data
+
+---
+
+Why Docker?
+    Docker lets me run each service in an isolated, reproducible container with its own dependencies, 
+    while Docker Compose connects and manages the services together.
+
+Dockerfile → image → container, plus Compose, network, volume, environment variables, secrets, and PID 1
+
+---
+
+Docker is software, specifically a platform/tool for building and running containers
+
+
+C / C++ / Python  → programming languages
+
+Linux             → operating system
+
+Docker            → containerization software/platform
+
+Dockerfile        → instructions for building a Docker image
+
+Docker Compose    → tool for defining/managing multiple containers
+
+---
+
+when install a Docker
+you get software that can do things such as:
+
+    docker build
+    docker run
+    docker ps
+    docker exec
+
+---
+
+Under the hood, Docker uses features provided by the Linux kernel 
+to isolate processes, filesystems, networking, etc.
+
+docker run mariadb
+    Docker isn't creating a whole new computer. 
+    It's essentially saying:
+        “Run this application in an isolated environment 
+        with its own filesystem, processes, network configuration, etc.”
+
+---
+
+That's why containers are generally much lighter than VMs:
+
+VM:
+    Hardware
+    └── Host OS
+        └── Virtual Machine
+            └── Guest OS
+                └── Application
+
+Docker:
+    Hardware
+    └── Host OS
+        └── Docker
+            ├── Container A
+            ├── Container B
+            └── Container C
+
+---
+
+Docker is a containerization platform that lets us 
+build, package, and run applications in isolated containers.
+
+---
+
+What is the Linux kernel?
+Think of Linux as having layers:
+    Your programs
+    Docker / Valgrind / Firefox / Bash
+            ↓
+        Linux kernel
+            ↓
+    CPU / RAM / disk / network / devices
+
+The kernel is the core of the operating system. 
+It sits between software and hardware and manages things like memory, processes, filesystems, networking, devices, and permissions.
+For Docker, this matters because containers use Linux kernel features for isolation. 
+Docker doesn't need to create an entire separate operating system for every container.
+
+Linux provides the underlying kernel technology. 
+Docker is software that uses those Linux capabilities to create and manage containers.
+
+---
+
+Physical computer
+      ↓
+Virtual Machine
+      ↓
+Linux
+      ↓
+Linux kernel
+      ↓
+Docker
+      ↓
+NGINX | WordPress | MariaDB
+
+
+---
+
+Before Docker
+    Before containers became popular, 
+    companies commonly used virtual machines to isolate applications:
+
+    Physical server
+    ├── VM → Linux → App A
+    ├── VM → Linux → App B
+    └── VM → Linux → App C
+
+This worked, but every VM needed its own operating system, 
+consuming more RAM, disk space, and startup time.
+
+Developers also had the classic problem:
+    “It works on my machine.” 💀
+
+Different machines had different libraries, versions, configurations, etc.
+
+Docker appears
+    Docker was created at a company called dotCloud and publicly released in 2013. 
+    Solomon Hykes presented the project publicly that year.
+
+    The big idea was:
+        Package the application and its environment into a portable container.
+
+    Instead of:
+        VM
+        └── Entire Linux OS
+            └── Application
+
+    You could have:
+        Linux kernel
+        ├── Container → App A
+        ├── Container → App B
+        └── Container → App C
+
+Containers share the host's Linux kernel, 
+making them generally much lighter and faster to start than full VMs.
+
+Docker didn't invent the underlying idea of containers. 
+Linux already had isolation technologies such as namespaces and cgroups. 
+Docker made these ideas dramatically easier for developers to build, package, distribute, and run.
+
+Before 2000s    → Unix/Linux isolation concepts develop
+2000s           → Linux container technologies mature
+2008            → LXC appears
+2013            → Docker publicly released 🐳
+2014–2015       → Docker explodes in popularity
+Today           → Containers are standard infrastructure technology
+
+---
+
+Docker was released in 2013 to make application containers 
+easy to build, distribute, and run consistently. 
+It uses existing Linux kernel isolation features rather than creating a complete VM for every application.
+
+---
+
+Your PC
+└── VM                  ← isolates an entire OS
+    └── Linux
+        └── Docker
+            ├── NGINX   ← isolates services
+            ├── WordPress
+            └── MariaDB

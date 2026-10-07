@@ -292,3 +292,111 @@ They're pieces of one working system.
       "Apparently I can run half the internet now." 🐙
 
    
+   ---
+
+   WordPress (PHP)
+      │
+      │ needs php-mysql
+      ▼
+   MariaDB
+
+---
+
+php-mysql installed
+       ↓
+PHP loads MySQL extensions
+       ↓
+WordPress 🐘
+       ↓
+can communicate with
+       ↓
+MariaDB 🗄️
+
+
+---
+
+PHP 
+   - is a programming language mainly used for web development. 
+   - WordPress is written mostly in PHP.
+
+   Browser requests page
+         ↓
+   WordPress PHP code
+         ↓
+   PHP executes the code
+         ↓
+   HTML page returned
+
+PHP-FPM 
+   - is the program that runs PHP code efficiently for a web server. 
+   - In our project:
+      NGINX → PHP-FPM → WordPress PHP code
+
+---
+
+MySQL 
+   - is a database system. 
+   - MariaDB is a MySQL-compatible database system, and that's what Inception uses.
+
+---
+
+WordPress needs a database to store things like:
+   posts
+   users
+   password hashes
+   settings
+   comments
+
+---
+
+php-mysql is the connector between PHP and MySQL/MariaDB:
+
+   WordPress
+      ↓
+   PHP
+      ↓
+   php-mysql     ← connector 🔌
+      ↓
+   MariaDB
+
+---
+
+- PHP runs WordPress. 
+- MariaDB stores WordPress data. php-mysql lets PHP communicate with MariaDB.
+
+---
+
+SQL 
+   - stands for Structured Query Language. 
+   - It's a language used to communicate with relational databases:
+      SELECT * FROM users;
+      CREATE DATABASE wordpress;
+      DELETE FROM users WHERE id = 5;
+
+MySQL 
+   - is a database management system that understands SQL.
+      SQL       = language 🗣️
+      MySQL     = database software 🗄️
+      MariaDB   = database software 🗄️
+
+   - SQL = the language you speak
+   - MySQL/MariaDB = the system you're speaking to
+
+WordPress
+   │ written in
+   ▼
+  PHP
+   │ sends SQL queries
+   ▼
+ MariaDB
+   │
+   ▼
+stores the data
+
+---
+
+CREATE DATABASE wordpress;
+CREATE USER ...
+GRANT ALL PRIVILEGES ...
+
+that was SQL, and MariaDB was the software executing that SQL. 🔌
