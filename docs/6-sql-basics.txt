@@ -1,0 +1,93 @@
+https://www.geeksforgeeks.org/dbms/sql-server-crud-operations/
+
+---
+
+Command	Meaning
+CREATE	Create something
+SELECT	Read/query data
+INSERT	Add data
+UPDATE	Change data
+DELETE	Remove data
+GRANT	Give permissions
+SHOW	Show databases/users/etc.
+
+---
+
+for inceptions:
+
+CREATE DATABASE
+CREATE USER
+GRANT
+FLUSH PRIVILEGES
+SHOW DATABASES
+SELECT
+
+---
+
+SQL is the language you use to talk to MariaDB.
+
+Think:
+    MariaDB = database server
+    SQL     = language you speak to it
+
+The commands you need:
+    -- See all databases
+    SHOW DATABASES;
+
+    -- Create a database
+    CREATE DATABASE wordpress;
+
+    -- Safer version
+    CREATE DATABASE IF NOT EXISTS wordpress;
+
+    -- Create a database user
+    CREATE USER 'wpuser'@'%' IDENTIFIED BY 'password';
+
+    -- Give wpuser access to the wordpress database
+    GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'%';
+
+    -- Reload permission information
+    FLUSH PRIVILEGES;
+
+    -- Read/query information
+    SELECT User, Host FROM mysql.user;
+
+---
+
+How to read SQL
+
+This:
+    CREATE USER 'wpuser'@'%' IDENTIFIED BY 'password';
+
+means:
+    CREATE USER
+        ↓
+    wpuser
+        ↓
+    from % (other hosts/containers)
+        ↓
+    with this password
+
+
+This:
+    GRANT ALL PRIVILEGES ON wordpress.* TO 'wpuser'@'%';
+
+means:
+    GRANT ALL PRIVILEGES
+            ↓
+    on wordpress.*
+    ↓         ↓
+    database   everything inside it
+            ↓
+    to wpuser
+
+---
+
+The 6 words to remember
+
+CREATE  → make something
+SHOW    → show things
+SELECT  → read/query something
+GRANT   → give permission
+DROP    → delete something ⚠️
+FLUSH   → reload privilege information

@@ -1,0 +1,157 @@
+CURRENT Flow
+
+mariadbd --skip-networking &
+        ↓
+temporary server 🔧
+        ↓
+mariadb client sends SQL
+        ↓
+wordpress + wpuser created
+        ↓
+temporary server stops
+        ↓
+exec mariadbd
+        ↓
+real server, PID 1 🚀
+
+----
+
+Why start it twice?
+    The first start is temporary, just so our initialization script can talk to the database and configure it.
+
+The second:
+    exec mariadbd
+
+    is the real long-running server that keeps the container alive and becomes PID 1, 
+    which is important for proper container behavior and something your subject explicitly tells you to understand.
+
+So the mental model is:
+    temporary server → configure database 🔧
+    final server      → actually run database 🚀
+
+---
+
+Your 42 machine
+│
+│ mariadb ❌ not installed here
+│
+└── Docker
+     └── mariadb container
+          ├── mariadbd  ← server
+          └── mariadb   ← client ✅
+
+---
+
+host vs container
+
+    mariadb -e "CREATE DATABASE wordpress;"
+
+    on 42 host machine. 
+    Your host doesn't have the MariaDB client installed, so:
+        zsh: command not found: mariadb
+
+
+    But remember, we installed MariaDB inside the container with:
+        RUN apt-get install ... mariadb-server
+
+    So the client exists inside the container. That's why this worked earlier:
+        docker exec mariadb mariadb -e "SHOW DATABASES;"
+
+---
+
+mariadbd --skip-networking &
+│         │                 └─ run in background
+│         └─ don't accept network connections yet
+└─ start MariaDB temporarily
+
+MARIADB_PID=$!
+             ↑
+             PID of that background process
+
+---
+
+read password
+     ↓
+MariaDB initialized?
+     ↓ no
+mariadb-install-db
+     ↓
+wordpress DB exists?
+     ↓ no
+--bootstrap
+     ├── CREATE DATABASE
+     ├── CREATE USER
+     └── GRANT permissions
+     ↓
+exec mariadbd
+     ↓
+MariaDB runs normally as PID 1
+
+
+---
+
+              mariadbd
+
+--bootstrap                normal
+    ↓                        ↓
+setup mode               server mode
+    ↓                        ↓
+execute SQL              listen on 3306
+    ↓                        ↓
+finish + exit            keep running
+
+---
+
+1. Read secret                  ✅
+2. Initialize MariaDB if needed ✅
+3. Database doesn't exist?
+      ↓ yes
+   bootstrap
+      ├─ CREATE DATABASE
+      ├─ CREATE USER
+      └─ GRANT
+4. exec mariadbd                ✅ PID 1
+
+---
+
+--bootstrap
+
+    Normally:
+        mariadbd
+
+    means:
+        Start MariaDB as a normal server and keep running.
+
+    But:
+        mariadbd --bootstrap
+
+    means:
+        Start MariaDB temporarily in setup/initialization mode, execute SQL directly, then finish.
+
+    That's why we can do:
+        mariadbd --user=mysql --bootstrap <<EOF
+        CREATE DATABASE wordpress;
+        CREATE USER ...;
+        GRANT ...;
+        EOF
+
+    Flow:
+        --bootstrap
+            ↓
+        MariaDB setup mode
+            ↓
+        execute CREATE DATABASE
+        execute CREATE USER
+        execute GRANT
+            ↓
+        finish
+
+    Then afterward:
+        exec mariadbd
+
+    starts the real MariaDB server that stays running as PID 1.
+    So remember:
+        --bootstrap  = configure MariaDB 🔧
+        mariadbd     = run MariaDB normally 🚀
+
+    And <<EOF ... EOF is simply how our shell feeds those SQL commands into bootstrap mode.

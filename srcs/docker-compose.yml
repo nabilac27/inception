@@ -6,6 +6,8 @@ services:
       context: ./requirements/mariadb
     env_file:
       - .env
+    secrets:
+      - db_password
 
   wordpress:
     image: wordpress
@@ -19,6 +21,9 @@ services:
     build:
       context: ./requirements/nginx
 
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
 
 # Each service then has its own Dockerfile:
 # docker-compose.yml
