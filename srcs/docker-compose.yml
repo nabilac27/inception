@@ -8,7 +8,9 @@ services:
       - .env
     secrets:
       - db_password
-
+    volumes:
+      - mariadb_data:/var/lib/mysql
+  
   wordpress:
     image: wordpress
     container_name: wordpress
@@ -24,6 +26,14 @@ services:
 secrets:
   db_password:
     file: ../secrets/db_password.txt
+
+volumes:
+  mariadb_data:
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: /home/nchairun/data/mariadb
 
 # Each service then has its own Dockerfile:
 # docker-compose.yml
