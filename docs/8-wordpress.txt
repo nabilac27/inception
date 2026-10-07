@@ -1,0 +1,294 @@
+https://www.youtube.com/watch?v=d975dVX01ps
+
+---
+
+Debian 12
+   ↓
+our WordPress image
+   ↓
+later install:
+PHP
+PHP-FPM
+WordPress tools
+
+- We are not using the ready-made WordPress Docker image. 
+- We're building our own container from Debian, as required by the subject
+
+---
+
+WordPress = PHP application
+              ↓
+           PHP-FPM
+              ↓
+        executes PHP code
+
+---
+
+- WordPress started as a blogging platform, but it grew into a general website-building system.
+
+- What is WordPress?
+   WordPress is a CMS, a Content Management System.
+
+- Instead of manually writing HTML every time you want to publish something, 
+   WordPress gives you an admin interface where you can create:
+   - Posts
+   - Pages
+   - Images
+   - Users
+   - Menus
+   - Themes
+   - Plugins
+   - etc.
+
+- WordPress then generates the website for visitors.
+
+Think
+
+Without WordPress:
+
+   You → edit HTML/PHP files manually → Website
+
+
+   With WordPress:
+
+   You → WordPress Admin 📝
+            ↓
+         WordPress
+         ↙       ↘
+      PHP       MariaDB
+         \       /
+         Website
+
+
+- Why MariaDB?
+   This connects directly to what we just built.
+
+   suppose you publish
+      Title: My First Blog
+      Author: Nabila
+      Content: Hello world!
+
+- WordPress doesn't normally hardcode that into an HTML file. 
+   It stores the information in the database.
+
+-  WordPress
+      ↓
+   "Give me this blog post"
+      ↓
+   MariaDB
+      ↓
+   post data
+      ↓
+   WordPress generates the page
+
+- That's why we built MariaDB first.
+
+- why PHP-FPM
+
+   WordPress itself is mostly written in PHP.
+   A browser cannot simply execute WordPress's PHP code. Something needs to run it:
+
+      WordPress PHP files
+         ↓
+      PHP-FPM
+         ↓
+   PHP code executes
+         ↓
+   generated web page
+
+- Eventually your complete Inception architecture becomes
+      YOU / BROWSER
+            │
+            │ HTTPS :443
+            ▼
+         NGINX 🔐
+            │
+            ▼
+      WORDPRESS
+      PHP-FPM
+            │
+            │ SQL
+            ▼
+      MARIADB 💾
+
+- So each container has one clear job:
+   NGINX receives web requests → WordPress/PHP-FPM builds the requested page → MariaDB stores and retrieves the data.
+
+
+- CMS = Content Management System.
+   It's software that lets someone manage a website's content 
+   without manually editing the website's source code.
+
+- Without CMS
+
+   Want a new article?
+         ↓
+   open HTML/code
+         ↓
+   edit files
+         ↓
+   deploy website
+
+- CMS
+   Login to admin dashboard
+         ↓
+   click "New Post"
+         ↓
+   write article + upload image
+         ↓
+   click Publish
+         ↓
+   website updated 🎉
+
+- The CMS sits between the human and all the technical machinery.
+
+
+   Human
+   ↓
+   WordPress dashboard
+   ↓
+   WordPress / PHP
+   ↓
+   MariaDB
+
+- WordPress the biggest CMS?
+   Yes, WordPress is generally considered the dominant CMS by website usage. 
+   More importantly for understanding Inception, WordPress is open-source software that you can host yourself.
+
+- You aren't asking some company:
+   “Please host my WordPress website.”
+
+- You're building the infrastructure yourself:
+   YOUR INFRASTRUCTURE
+
+   NGINX
+   ↓
+   WordPress + PHP-FPM
+   ↓
+   MariaDB
+
+- And that is the catch of Inception. 🧠
+- The project isn't really trying to teach you how to make a WordPress blog.
+- WordPress is almost the passenger. You're learning how to build the car around it.
+
+
+---
+
+- Need to understand:
+   Docker
+   containers
+   images
+   Dockerfiles
+   Compose
+   networks
+   volumes
+   secrets
+   environment variables
+   TLS/HTTPS
+   NGINX
+   databases
+   service-to-service communication
+   persistent storage
+   PID 1
+
+- instead of --> docker run wordpress
+
+---
+
+- Wix, Hostinger, Blogspot?
+   - They're related, but not quite the same thing.
+   - WordPress is a CMS. You can download WordPress, run it on your own server, connect your own database, modify it, etc.
+   - Wix is primarily a hosted website builder/platform. 
+      It provides CMS-like content-management features, but you don't normally download Wix and 
+      deploy a “Wix container” on your own server.
+   - Blogger/Blogspot is Google's hosted blogging platform. 
+      It also manages content, but Google operates the infrastructure underneath it.
+   - Hostinger is primarily a web-hosting company, not itself a CMS. 
+      It can host websites built with WordPress and other tools.
+
+---
+
+CMS
+"What software manages my website content?"
+→ WordPress
+
+
+Hosting
+"Where does my website actually run?"
+→ Hostinger
+→ your own server
+→ cloud provider
+→ etc.
+
+
+Website builder/platform
+"Give me an integrated system for building
+and hosting my site."
+→ Wix
+
+
+Inception
+"Fine, I'll build the hosting stack myself." 😎
+
+Browser
+   ↓
+NGINX
+   ↓
+WordPress CMS
+   ↓
+MariaDB
+
+---
+
+WordPress gives a real application that needs to talk to that database. 
+Then NGINX gives the web-server/reverse-proxy layer in front.
+Suddenly Docker networking, volumes, secrets, databases, and HTTPS aren't isolated vocabulary anymore. 
+They're pieces of one working system.
+
+
+---
+
+   Early web, 1990s
+   │
+   │ Websites mostly edited manually
+   │
+   ├─ Mid/late 1990s
+   │  Early web content-management systems appear
+   │
+   ├─ 2001  Drupal
+   │
+   ├─ 2001  Movable Type
+   │
+   ├─ 2003  WordPress 🌱
+   │
+   ├─ 2005  Joomla
+   │
+   └─ Today
+      many CMSs + website builders
+
+- There isn't really one person who “invented the CMS.” 
+- The concept evolved during the 1990s as websites became larger and organizations needed non-programmers to update content.
+- One historically important early commercial system was Vignette StoryServer, 
+   which grew out of software developed in the mid-1990s for managing web content. 
+   Other companies and projects were building similar ideas around the same period.
+- WordPress came later, in 2003, created by Matt Mullenweg and Mike Little as a fork/successor of the blogging software b2/cafelog.
+
+      1990s website:
+      "I edit HTML files."
+
+            ↓
+
+      CMS:
+      "I log in and manage content."
+
+            ↓
+
+      WordPress:
+      "Let's make publishing/blogging really accessible."
+
+            ↓
+
+      Modern WordPress:
+      "Apparently I can run half the internet now." 🐙
+
+   

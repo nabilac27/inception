@@ -76,3 +76,8 @@ new container → reconnects to them ✅
 ---
 
 subject also says bind mounts are not allowed for these persistent volumes, while this common Compose pattern uses the local driver's bind option. So before we lock this in as the final project configuration, we should verify how your current Inception subject/evaluator expects the /home/nchairun/data requirement to be implemented.
+
+---
+
+Data persistence means:
+The data stays even when the container is deleted or restarted. 💾
