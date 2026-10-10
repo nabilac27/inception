@@ -1,0 +1,175 @@
+42 INCEPTION - DEBIAN 12 VIRTUAL MACHINE SETUP
+================================================
+
+HOST OS: Ubuntu 22.04.5 LTS
+VIRTUALBOX: 7.1.16
+GUEST OS: Debian 12 (Bookworm)
+ESTIMATED TIME: 30-60 minutes
+
+
+1. CREATE VIRTUAL MACHINE
+-------------------------
+Open VirtualBox:
+
+    virtualbox
+
+Click New and configure:
+
+    Name: Inception
+    ISO: debian-12.12.0-amd64-netinst.iso
+    Type: Linux
+    Version: Debian (64-bit)
+    Base Memory: 4096 MB
+    Processors: 2
+    Disk Size: 30 GB
+    Disk Type: VDI
+    Pre-allocate Full Size: Unchecked
+    Skip Unattended Installation: Checked
+
+Click Finish -> Start.
+
+
+2. INSTALL DEBIAN 12
+--------------------
+Select Graphical Install.
+
+    Language: English
+    Location: Germany
+    Keyboard: English (US)
+    Hostname: inception
+    Domain: Leave empty
+    Root password: Set password
+    Username: Your username
+    User password: Set password
+
+Partition disks:
+
+    Guided - use entire disk
+    Select the VM's virtual disk
+    All files in one partition
+    Finish partitioning
+    Write changes to disk: Yes
+
+Note: This only formats the VM's virtual disk.
+
+
+3. SOFTWARE SELECTION
+---------------------
+Uncheck:
+    [ ] Debian desktop environment
+    [ ] GNOME
+
+Check:
+    [X] SSH server
+    [X] Standard system utilities
+
+Install GRUB bootloader: Yes
+
+Finish installation and reboot.
+
+
+4. INSTALL DOCKER
+-----------------
+Log in to Debian.
+
+Switch to root:
+
+    su -
+
+Update packages:
+
+    apt update
+
+Install dependencies:
+
+    apt install -y ca-certificates curl git make
+
+Install Docker:
+
+    apt install -y docker.io
+
+Enable and start Docker:
+
+    systemctl enable --now docker
+
+Check Docker:
+
+    docker --version
+    docker info
+
+
+5. INSTALL DOCKER COMPOSE
+-------------------------
+Install Docker Compose using Docker's
+official Debian repository.
+
+Verify installation:
+
+    docker compose version
+
+
+6. CONFIGURE USER PERMISSIONS
+-----------------------------
+As root:
+
+    usermod -aG docker YOUR_USERNAME
+
+Replace YOUR_USERNAME with your Debian username.
+
+Log out and log back in.
+
+Test Docker:
+
+    docker ps
+
+
+7. CLONE INCEPTION PROJECT
+--------------------------
+Inside Debian:
+
+    git clone YOUR_REPOSITORY_URL
+
+    cd YOUR_REPOSITORY
+
+Configure:
+    - .env
+    - Docker secrets
+    - Volume directories
+    - Docker Compose configuration
+
+
+8. BUILD AND RUN INCEPTION
+--------------------------
+From the project root:
+
+    make
+
+Check running containers:
+
+    docker ps
+
+    docker compose -f srcs/docker-compose.yml ps
+
+Expected containers:
+
+    mariadb
+    wordpress
+    nginx
+
+
+9. FINAL VERIFICATION
+---------------------
+[ ] Debian 12 boots successfully
+[ ] Docker works
+[ ] Docker Compose works
+[ ] MariaDB container runs
+[ ] WordPress container runs
+[ ] NGINX container runs
+[ ] HTTPS works
+[ ] Volumes persist after restart
+[ ] Containers communicate over Docker network
+
+
+DONE!
+=====
+Debian 12 VM is ready for 42 Inception.

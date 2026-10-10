@@ -1,0 +1,8 @@
+Step	Purpose
+set -e	Stop if a command fails
+DB_PASSWORD=$(cat ...)	Read password from Docker secret
+until ...	Wait for MariaDB to become available
+wp config create	Generate wp-config.php
+wp core install	Install WordPress and create admin
+wp user create	Create second WordPress user
+exec php-fpm8.2 -F	Run PHP-FPM as the container's main process
