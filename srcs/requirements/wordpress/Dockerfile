@@ -47,3 +47,6 @@ EXPOSE 9000
 
 # 9. Run initialization script
 ENTRYPOINT ["/usr/local/bin/init.sh"]
+
+
+CMD ["php-fpm8.2", "-F"]
