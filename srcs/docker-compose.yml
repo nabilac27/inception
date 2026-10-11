@@ -10,13 +10,28 @@ services:
       - db_password
     volumes:
       - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
   
   wordpress:
     image: wordpress
     container_name: wordpress
     build:
       context: ./requirements/wordpress
-
+    restart: always
+    env_file:
+      - .env
+    secrets:
+      - db_password
+      - wp_admin_password
+      - wp_user_password
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+  
   nginx:
     image: nginx
     container_name: nginx
@@ -34,33 +49,3 @@ volumes:
     #   type: none
     #   o: bind
     #   device: /home/nchairun/data/mariadb
-
-# Each service then has its own Dockerfile:
-# docker-compose.yml
-#         │
-#         ├──────────────┐
-#         │              │
-#         ▼              ▼
-#  nginx/Dockerfile   wordpress/Dockerfile
-#         │              │
-#         ▼              ▼
-#    nginx process   php-fpm process
-#         │
-#         ▼
-#  mariadb/Dockerfile
-#         │
-#         ▼
-#  mysqld process
-
-#  services:
-#   mariadb:
-#     image: mariadb
-#     build: ./requirements/mariadb
-
-#   wordpress:
-#     image: wordpress
-#     build: ./requirements/wordpress
-
-#   nginx:
-#     image: nginx
-#     build: ./requirements/nginx
