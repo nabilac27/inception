@@ -19,6 +19,9 @@ echo "MariaDB is ready!"
 
 # 3. Move to WordPress directory
 cd /var/www/html
+if [ ! -f wp-includes/version.php ]; then
+    wp core download --allow-root
+fi
 
 # 4. Create WordPress configuration
 if [ ! -f wp-config.php ]; then

@@ -1,0 +1,2 @@
+Persistent storage means keeping data even when a Docker container is deleted and recreated.
+
