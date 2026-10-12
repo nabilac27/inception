@@ -181,3 +181,25 @@ with exec:
     PID 1
     |
     mysqld
+
+
+
+---
+
+TCP (Transmission Control Protocol) is a network protocol that allows two programs to communicate reliably over a network.
+For your 42 Inception project, TCP is how WordPress communicates with MariaDB when they're running in separate Docker containers.
+
+
+     WordPress container
+             |
+             | TCP connection
+             | Port 3306
+             |
+             v
+      MariaDB container
+             |
+         mariadbd
+             |
+       WordPress database
+
+       

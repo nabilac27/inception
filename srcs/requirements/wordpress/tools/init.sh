@@ -1,39 +1,34 @@
 #!/bin/bash
 set -e
 
-# 1. Read database password from Docker secret
+# ------------------------ READ DB PASSWORD, PREPARE MARIADB DIRECTORY ------------------------
 DB_PASSWORD=$(cat /run/secrets/db_password)
 
-# 2. Wait for MariaDB
-echo "Waiting for MariaDB..."
-
-until mariadb-admin ping \
+until mariadb \
     -h mariadb \
-    -u "$MYSQL_USER" \
+    -u "$MARIADB_USER" \
     -p"$DB_PASSWORD" \
-    --silent; do
+    "$MARIADB_DATABASE" \
+    -e "SELECT 1;" >/dev/null 2>&1; do
     sleep 2
 done
 
-echo "MariaDB is ready!"
-
-# 3. Move to WordPress directory
+# ------------------------ MOVE TO WP DIRECTORY ------------------------
 cd /var/www/html
 if [ ! -f wp-includes/version.php ]; then
-    wp core download --allow-root
+    cp -a /usr/src/wordpress/. /var/www/html/
 fi
 
-# 4. Create WordPress configuration
+# ------------------------ CREATE WP CONFIG, INSTALL WP, CREATE ADDITIONAL WPUSER ------------------------
 if [ ! -f wp-config.php ]; then
     wp config create \
-        --dbname="$MYSQL_DATABASE" \
-        --dbuser="$MYSQL_USER" \
+        --dbname="$MARIADB_DATABASE" \
+        --dbuser="$MARIADB_USER" \
         --dbpass="$DB_PASSWORD" \
         --dbhost="mariadb:3306" \
         --allow-root
 fi
 
-# 5. Install WordPress
 if ! wp core is-installed --allow-root; then
     wp core install \
         --url="$DOMAIN_NAME" \
@@ -44,7 +39,6 @@ if ! wp core is-installed --allow-root; then
         --skip-email \
         --allow-root
 
-    # 6. Create additional WordPress user
     wp user create \
         "$WP_USER" \
         "$WP_USER_EMAIL" \
@@ -53,7 +47,5 @@ if ! wp core is-installed --allow-root; then
         --allow-root
 fi
 
-# 7. Start PHP-FPM in foreground
-echo "Starting PHP-FPM..."
-
+# ------------------------ START PHP-FPM ------------------------
 exec php-fpm8.2 -F

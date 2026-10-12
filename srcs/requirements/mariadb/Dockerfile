@@ -1,34 +1,19 @@
-# MariaDB
+FROM	debian:bookworm
 
-# ✓ MariaDB image builds from Debian
-# ✓ Container stays running
-# ✓ No official MariaDB image is used
-# ✓ WordPress database exists
-# ✓ Non-root database user exists
-# ✓ MariaDB listens on the Docker network
-# ✓ Database survives container recreation
-# ✓ mariadbd runs as the main foreground process
+RUN 	apt-get update && \
+		apt-get install -y --no-install-recommends mariadb-server && \
+		rm -rf /var/lib/apt/lists/* && \
+		mkdir -p /run/mysqld && \
+		chown mysql:mysql /run/mysqld
 
-# Initial version:
-# - Build from Debian 12
-# - Install MariaDB Server
-# - Start mariadbd in the foreground
+COPY 	conf/50-server.cnf 	/etc/mysql/mariadb.conf.d/50-server.cnf
 
-FROM debian:12
+COPY 	tools/init.sh 		/usr/local/bin/init.sh
 
-RUN apt-get update && \
-	apt-get install -y --no-install-recommends mariadb-server && \
-	rm -rf /var/lib/apt/lists/* && \
-	mkdir -p /run/mysqld && \
-	chown mysql:mysql /run/mysqld
+RUN 	chmod +x /usr/local/bin/init.sh
 
-COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
-
-COPY tools/init.sh /usr/local/bin/init.sh
-
-RUN chmod +x /usr/local/bin/init.sh
-
-USER mysql
+EXPOSE 	3306
+# USER 	mysql
 
 ENTRYPOINT ["/usr/local/bin/init.sh"]
 
@@ -39,3 +24,31 @@ ENTRYPOINT ["/usr/local/bin/init.sh"]
 #       └── mysql       ✅
 #            │
 #            └── mariadbd
+
+# Process				Linux user	Why
+# init.sh				root		Creates directories, changes ownership, initializes the database
+# Temporary mariadbd	mysql		Runs the database server during initialization
+# Final mariadbd		mysql		Runs the actual database server
+
+
+# Docker container
+#        |
+#        v
+# init.sh (root)
+#        |
+#        +-- Initialize directories and database
+#        |
+#        +-- Temporary mariadbd (mysql)
+#        |         |
+#        |         +-- Create WordPress database and user
+#        |         +-- Shut down
+#        |
+#        v
+# exec mariadbd --user=mysql
+#        |
+#        v
+# Final MariaDB server (mysql, PID 1)
+
+# docker compose exec mariadb ps -eo pid,user,comm
+# - PID 1, mysql, mariadbd: MariaDB is the container's main process and runs as the correct non-root user.
+# - PID 22, root, ps: This is just the command you executed using docker compose exec. It runs as root because your Dockerfile no longer specifies USER mysql.

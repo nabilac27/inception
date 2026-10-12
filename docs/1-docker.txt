@@ -1,0 +1,540 @@
+DOCKER & DOCKER COMPOSE - 42 INCEPTION
+=====================================
+
+1. WHAT IS DOCKER?
+------------------
+Docker is a containerization platform used to build, package and run applications in isolated environments called containers.
+
+A container includes an application and its required dependencies, but shares the host's Linux kernel.
+
+In Inception:
+
+    Linux VM
+       |
+       +-- Docker
+             |
+             +-- NGINX container
+             +-- WordPress container
+             +-- MariaDB container
+
+Each service runs independently in its own container.
+
+Why Docker?
+    - Isolation between services
+    - Reproducible environments
+    - Consistent dependencies
+    - Easier deployment
+    - Lightweight compared with full virtual machines
+
+
+2. DOCKERFILE, IMAGE & CONTAINER
+--------------------------------
+    Dockerfile
+        |
+        | docker build
+        v
+      Image
+        |
+        | docker run
+        v
+     Container
+
+Dockerfile = instructions for building an image.
+Image      = packaged, read-only template.
+Container  = instance created from an image.
+
+Example Dockerfile:
+
+    FROM debian:12
+    RUN apt-get update && apt-get install -y mariadb-server
+    COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/
+    COPY tools/init.sh /usr/local/bin/init.sh
+    ENTRYPOINT ["/usr/local/bin/init.sh"]
+
+Build an image:
+
+    docker build -t mariadb-test .
+
+Run a container:
+
+    docker run mariadb-test
+
+One image can be used to create multiple containers.
+
+IMPORTANT:
+    Image != Container
+
+    An image is the template.
+    A container is an instance of that template.
+
+
+3. WHAT IS DOCKER COMPOSE?
+--------------------------
+Docker Compose is a tool for defining and managing multiple containers together.
+
+Instead of manually:
+    - Building images
+    - Starting containers
+    - Connecting networks
+    - Attaching volumes
+    - Configuring environment variables
+    - Mounting secrets
+
+We describe the application in a YAML file:
+
+    docker-compose.yml
+
+Example:
+
+    services:
+      mariadb:
+        build: ./requirements/mariadb
+        volumes:
+          - mariadb_data:/var/lib/mysql
+        networks:
+          - inception
+
+      wordpress:
+        build: ./requirements/wordpress
+        networks:
+          - inception
+
+      nginx:
+        build: ./requirements/nginx
+        ports:
+          - "443:443"
+        networks:
+          - inception
+
+    volumes:
+      mariadb_data:
+
+    networks:
+      inception:
+
+This is a simplified example, not a complete Inception configuration.
+
+Start the application:
+
+    docker compose up -d
+
+Stop and remove the containers and Compose network:
+
+    docker compose down
+
+Docker Compose manages the services as one application.
+
+
+4. DOCKER VS DOCKER COMPOSE
+---------------------------
+Docker:
+    Builds images and runs containers.
+
+Docker Compose:
+    Defines and coordinates multiple Docker services.
+
+Dockerfile:
+    Describes how to build one image.
+
+docker-compose.yml:
+    Describes how the services work together.
+
+Remember:
+
+    Dockerfile       -> HOW to build
+    Docker image     -> WHAT was built
+    Docker container -> Running instance
+    Docker Compose   -> HOW services work together
+
+
+5. DOCKER NETWORKS
+-------------------
+Docker networks allow containers to communicate.
+
+Inception architecture:
+
+    Browser
+       |
+       | HTTPS :443
+       v
+    NGINX
+       |
+       | FastCGI :9000
+       v
+    WordPress + PHP-FPM
+       |
+       | TCP :3306
+       v
+    MariaDB
+
+All three containers communicate through the Docker network.
+
+Docker Compose provides service-name-based DNS resolution.
+
+Example:
+
+    mariadb:3306
+
+    mariadb = service hostname
+    3306    = database TCP port
+
+Only NGINX port 443 is published to the host in the mandatory project.
+
+MariaDB and PHP-FPM do not need publicly published ports.
+
+Note: FastCGI uses TCP port 9000 when configured for TCP rather than a Unix socket.
+
+
+6. DOCKER VOLUMES
+-----------------
+Containers are disposable.
+
+Data stored only in a container's writable filesystem may disappear when that container is removed.
+
+Docker volumes store data independently of the container lifecycle.
+
+Example:
+
+    MariaDB container
+           |
+           | /var/lib/mysql
+           v
+      Docker volume
+           |
+           v
+      Persistent data
+
+In docker-compose.yml:
+
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+Meaning:
+    mariadb_data = named Docker volume
+    /var/lib/mysql = directory inside the container
+
+Removing and recreating the container does not delete the named volume.
+
+WARNING:
+    docker compose down -v
+
+also removes Compose-managed named volumes and can delete your database data.
+
+
+7. ENVIRONMENT VARIABLES & SECRETS
+-----------------------------------
+Environment variables provide configuration values.
+
+Example .env:
+
+    MARIADB_DATABASE=wordpress
+    MARIADB_USER=wpuser
+
+Secrets are used for sensitive information such as passwords.
+
+Example:
+
+    /run/secrets/db_password
+
+Inside the MariaDB container:
+
+    DB_PASSWORD=$(cat /run/secrets/db_password)
+
+Important:
+    Environment variables = configuration
+    Secrets               = sensitive data
+
+Docker Compose can pass environment variables and mount secrets into containers.
+
+
+8. LINUX KERNEL & CONTAINERS
+----------------------------
+The Linux kernel is the core of the Linux operating system.
+
+It manages:
+    - Processes
+    - Memory
+    - Filesystems
+    - Networking
+    - Devices
+    - Permissions
+
+Architecture:
+
+    Applications
+         |
+         v
+    Linux kernel
+         |
+         v
+    Hardware
+
+Docker uses Linux kernel features to isolate containers.
+
+Important technologies:
+
+    Namespaces = isolate process views, networking,
+                 mounts and other resources.
+
+    Cgroups    = organize, track and limit resource usage.
+
+Containers share the host Linux kernel instead of running a complete separate kernel for every container.
+
+
+9. DOCKER VS VIRTUAL MACHINES
+-----------------------------
+Virtual Machine:
+
+    Physical computer
+         |
+         v
+    Hypervisor
+         |
+         v
+    Virtual Machine
+         |
+         +-- Guest operating system
+         +-- Guest kernel
+         +-- Application
+
+Docker container:
+
+    Linux host / VM
+         |
+         +-- Shared Linux kernel
+         |
+         +-- Container A
+         +-- Container B
+         +-- Container C
+
+VM:
+    Virtualizes an entire machine.
+    Runs its own guest OS and kernel.
+
+Container:
+    Isolates applications and processes.
+    Shares the host kernel.
+    Generally starts faster and uses fewer resources.
+
+In Inception:
+
+    Physical computer
+         |
+         v
+    Virtual Machine
+         |
+         v
+    Debian Linux
+         |
+         v
+    Docker
+         |
+         +-- NGINX
+         +-- WordPress
+         +-- MariaDB
+
+
+10. PID 1 & CONTAINER LIFECYCLE
+-------------------------------
+PID = Process ID.
+
+PID 1 is the main process inside a typical Docker container.
+
+For MariaDB, the entrypoint ends with:
+
+    exec mariadbd --user=mysql
+
+The exec command replaces the shell process with mariadbd.
+
+Before exec:
+
+    PID 1 -> init.sh
+                |
+                +-- mariadbd
+
+After exec:
+
+    PID 1 -> mariadbd
+
+Why this matters:
+    - Docker manages the container's main process.
+    - Stop signals are sent to PID 1.
+    - The service can shut down cleanly.
+    - No artificial infinite loop is needed.
+
+A container normally stops when its main process exits.
+
+
+11. COMMON DOCKER COMMANDS
+--------------------------
+docker --version
+    Show Docker version.
+
+docker ps
+    List running containers.
+
+docker ps -a
+    List all containers.
+
+docker images
+    List local images.
+
+docker build -t myimage .
+    Build an image from a Dockerfile.
+
+docker run myimage
+    Create and start a container.
+
+docker exec -it CONTAINER sh
+    Open a shell inside a running container.
+
+docker logs CONTAINER
+    Display container logs.
+
+docker stop CONTAINER
+    Stop a running container.
+
+docker rm CONTAINER
+    Remove a stopped container.
+
+
+12. COMMON DOCKER COMPOSE COMMANDS
+----------------------------------
+docker compose up -d
+    Build if needed, create and start services
+    in the background.
+
+docker compose up -d --build
+    Rebuild images and start services.
+
+docker compose ps
+    List Compose services and their status.
+
+docker compose logs
+    Display logs from all services.
+
+docker compose logs -f mariadb
+    Follow MariaDB logs.
+
+docker compose exec mariadb sh
+    Open a shell inside the MariaDB container.
+
+docker compose exec -u root mariadb sh
+    Open a shell as Linux root.
+
+docker compose down
+    Stop and remove Compose containers and networks.
+    Named volumes are preserved by default.
+
+docker compose down -v
+    Also remove Compose-managed named volumes.
+    WARNING: May delete persistent data.
+
+docker compose config
+    Display the resolved Compose configuration.
+    Be careful: it may reveal sensitive environment values.
+
+
+13. BRIEF HISTORY OF DOCKER
+---------------------------
+Before Docker:
+    Virtual machines were commonly used for application isolation.
+    Different environments caused dependency and configuration problems.
+
+Docker was publicly released in 2013 by dotCloud.
+
+Docker did not invent containers.
+It made existing Linux isolation technologies easier to use.
+
+Timeline:
+
+    2000s -> Linux container technologies mature
+    2008  -> LXC appears
+    2013  -> Docker publicly released
+    Today -> Containers are widely used for deployment
+
+Docker's main contribution:
+    Making applications easier to build, package,
+    distribute and run consistently.
+
+
+14. INCEPTION DEFENSE SUMMARY
+-----------------------------
+Q: What is Docker?
+
+A: Docker is a containerization platform that lets us
+   package and run applications in isolated containers
+   using Linux kernel features.
+
+Q: What is Docker Compose?
+
+A: Docker Compose defines and manages multiple services
+   using a YAML configuration file.
+
+Q: Dockerfile vs image vs container?
+
+A: Dockerfile = build instructions.
+   Image = packaged template.
+   Container = instance created from an image.
+
+Q: Why use Docker for Inception?
+
+A: Each service runs in an isolated, reproducible
+   environment with its own dependencies.
+   Docker Compose connects and manages the services.
+
+Q: Docker vs VM?
+
+A: A VM runs its own guest OS and kernel.
+   Linux containers share the host kernel.
+
+Q: Why use volumes?
+
+A: To preserve database and WordPress data even when
+   containers are removed and recreated.
+
+Q: Why use Docker networks?
+
+A: To allow services to communicate internally
+   without publishing every service port.
+
+Q: Why use exec in the entrypoint?
+
+A: To replace the entrypoint shell with the main service
+   process so it becomes PID 1 and receives signals directly.
+
+
+QUICK REVISION
+--------------
+Docker          = Containerization platform
+Dockerfile      = Image build instructions
+Image           = Packaged application template
+Container       = Isolated application instance
+Docker Compose  = Multi-container application management
+Network         = Communication between containers
+Volume          = Persistent storage
+Environment     = Configuration variables
+Secret          = Sensitive configuration data
+Linux kernel    = Core of the operating system
+Namespaces      = Isolation
+Cgroups         = Resource management
+PID 1           = Container's main process
+ENTRYPOINT      = Defines the container's startup command
+exec            = Replaces the current process
+
+INCEPTION:
+
+    Dockerfile -> Image -> Container
+                              |
+                    Docker Compose
+                              |
+              +---------------+---------------+
+              |               |               |
+            NGINX         WordPress         MariaDB
+              |               |               |
+              +---------------+---------------+
+                       Docker Network
+                              |
+                         Docker Volumes
+                              |
+                        Persistent Data
