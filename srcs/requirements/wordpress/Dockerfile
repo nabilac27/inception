@@ -16,10 +16,10 @@ RUN apt-get update && \
         tar \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Download and extract WordPress
-RUN mkdir -p /var/www/html && \
+# 2. Download WordPress into a temporary image directory
+RUN mkdir -p /usr/src/wordpress && \
     curl -fsSL https://wordpress.org/wordpress-6.8.3.tar.gz \
-    | tar -xz --strip-components=1 -C /var/www/html
+    | tar -xz --strip-components=1 -C /usr/src/wordpress
 
 # 3. Install WP-CLI
 RUN curl -fsSL \
@@ -47,6 +47,3 @@ EXPOSE 9000
 
 # 9. Run initialization script
 ENTRYPOINT ["/usr/local/bin/init.sh"]
-
-
-CMD ["php-fpm8.2", "-F"]
