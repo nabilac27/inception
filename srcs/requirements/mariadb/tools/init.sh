@@ -43,10 +43,10 @@ exec mariadbd
 # DB_PASSWORD=$(cat /run/secrets/db_password)
 
 # # Initialize MariaDB system files if needed
-# if [ ! -d "/var/lib/mysql/mysql" ]; then
-# 	echo "Initializing MariaDB database..."
-# 	mariadb-install-db --user=mysql --datadir=/var/lib/mysql
-# fi
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+	echo "Initializing MariaDB database..."
+	mariadb-install-db --user=mysql --datadir=/var/lib/mysql
+fi
 
 # # Create WordPress database and database user if needed
 # if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then

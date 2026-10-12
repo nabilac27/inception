@@ -59,3 +59,7 @@ Pre-allocate Full Size	        No
 ---
 
 Screenshot: Ctrl + Alt + Shift + R
+
+---
+
+https://devabdilah.medium.com/inception-42-a-comprehensive-guide-to-dockerizing-your-first-infrastructure-part-iii-a10e93e9d922

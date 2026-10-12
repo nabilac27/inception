@@ -1,0 +1,183 @@
+
+
+Port	Common purpose
+22	    SSH
+80	    HTTP
+443	    HTTPS
+3306	MariaDB/MySQL
+9000	PHP-FPM
+8443	Common alternative HTTPS port
+
+
+---
+
+
+How do you build a container that 
+- initializes itself exactly once
+- persists forever
+- runs correctly as a Linux process?
+
+---
+
+MariaDB Container
+
+1. installing database software
+2. initializing internal database structures
+3. creating application database
+4. creating users/passwords
+5. persisting state to external volume
+6. exposing SQL server internally
+7. surviving container restarts
+
+                [ WordPress ]
+                       |
+                 SQL TCP 3306
+                       |
+                [ MariaDB ]
+                       |
+                Persistent Volume
+                       |
+              /home/login/data/mariadb
+
+
+Without MariaDB: no users, no posts, no settings, no persistence
+
+Dockerfile:
+    defines How the image is built [image construction phase]
+
+tools/init.sh:
+    What happens when container starts [runtime lifecycle phase.]
+
+
+MariaDB stores everything in    /var/lib/mysql
+
+inside this directory:
+    database files
+    system tables
+    user credentials
+    indexes
+    logs
+
+This path MUST be volume-mounted.
+
+First Run
+    Database directory empty.
+
+Need to:
+    1. initialize MariaDB internals
+    2. create WordPress DB
+    3. create users
+    4. configure passwords
+
+Later Run
+Must not:
+    1. Recreate DB
+    2. Reset Passwords
+    3. Overwrite State
+
+Initialization Detection
+    if [ ! -d "/var/lib/mysql/mysql" ];
+    then
+        # first startup
+    fi
+
+/var/lib/mysql/mysql
+
+contains internal system table
+
+if missing = never start
+
+    Container starts
+        |
+    Check /var/lib/mysql/mysql
+        |
+    Exists?
+    /   \
+    yes    no
+    |       |
+    normal   initialize DB
+    boot
+
+---
+
+Entrypoint script
+    Container starts
+        ↓
+    ENTRYPOINT executes init.sh
+        ↓
+    init.sh decides:
+    initialize?
+    or normal boot?
+
+
+---
+
+Dockerfile Layer System
+    Every Docker instruction creates an immutable filesystem layer.
+
+
+RUN apt-get update                          creates one layer
+RUN apt-get install -y mariadb-server       creates another layer
+
+    Base Image Layer
+        ↓
+    apt update layer
+        ↓
+    MariaDB install layer
+        ↓
+    Copied scripts layer
+
+This is why caching exists.
+
+Before MariaDB can run: system tables must exist.
+
+
+Initialize using:
+    mariadb-install-db --user=mysql --datadir=/var/lib/mysql
+
+this creates:
+    mysql.user
+    mysql.db
+    internal privilege tables
+
+without: MariaDB cannot boot
+
+
+temporary bootstrap server
+- Now you need MariaDB running temporarily.
+- Purpose: execute SQL initialization commands.
+
+start temporary server:
+    mysqld --skip-networking &
+
+
+---
+
+Docker Architecture Concept
+ ENTRYPOINT vs CMD
+
+
+---
+
+exec?
+
+without exec
+    bash = PID 1
+    mysqld = child process
+
+    - Signals break.
+    - Zombie processes possible.
+    - Improper shutdowns possible.
+  
+with exec:
+    mysqld replaces bash
+    mysqld becomes PID 1
+
+    This is proper container lifecycle design.
+---
+
+    Container
+    |
+    PID 1
+    |
+    mysqld
