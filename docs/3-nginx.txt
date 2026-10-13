@@ -1,0 +1,150 @@
+TLS stands for Transport Layer Security.
+
+It protects communication between the browser and NGINX by providing:
+- Encryption: Other people cannot easily read the transmitted information.
+- Integrity: Detects modifications to data during transmission.
+- Authentication: Helps verify the identity of the server through its certificate.
+
+HTTPS is simply HTTP over TLS.
+
+listen 443 ssl;
+ssl_protocols TLSv1.2 TLSv1.3;
+
+The first line tells NGINX to listen for HTTPS connections on port 443.
+The second restricts connections to TLS 1.2 and TLS 1.3.
+
+
+TLS certificate
+- TLS certificate contains information such as the server's identity and public key.
+  
+NGINX Dockerfile generates two files using OpenSSL:
+    /etc/nginx/ssl/nginx.crt  → Certificate (public)
+    /etc/nginx/ssl/nginx.key  → Private key (secret)
+
+
+NGINX configuration loads them:
+    ssl_certificate /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+
+
+Inception
+-> NGINX to be the single entry point into your application.
+
+That's why your Docker Compose publishes only NGINX's HTTPS port:
+    ports:
+    - "443:443"
+
+WordPress and MariaDB communicate internally through the Docker network. 
+They don't need publicly exposed ports.
+
+
+----
+
+
+NGINX configuration syntax
+
+server {
+    listen 443 ssl;
+    server_name nchairun.42.fr;
+}
+
+- server defines a configuration block.
+- { } groups related directives.
+- listen and server_name are NGINX directives.
+- ; ends each directive.
+
+
+
+languages are used in your Inception project
+File	                Language / Format
+default.conf	        NGINX configuration
+Dockerfile	            Dockerfile syntax
+docker-compose.yml	    YAML
+.env	                Environment variable format
+init.sh	                Shell scripting (Bash or sh)
+Makefile	            Make syntax
+WordPress application	PHP
+
+
+
+
+---
+
+defaul.conf
+
+1. server configuration
+
+server {
+    listen 443 ssl;
+    server_name nchairun.42.fr;
+
+
+- server {} defines a virtual server in NGINX.
+- listen 443 ssl; tells NGINX to accept HTTPS connections on port 443.
+- server_name nchairun.42.fr; identifies the hostname this server block handles.
+
+Defense question: Does server_name automatically make nchairun.42.fr resolve to your VM's IP address?
+No. That's the job of DNS or /etc/hosts.
+
+
+2. TLS configuration
+
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_certificate /etc/nginx/ssl/nginx.crt;
+ssl_certificate_key /etc/nginx/ssl/nginx.key;
+
+- ssl_protocols specifies the permitted TLS versions.
+- ssl_certificate points to your public certificate.
+- ssl_certificate_key points to your private key.
+
+For Inception, TLS 1.2 and TLS 1.3 satisfy the protocol requirement.
+
+
+3. WordPress document root
+root /var/www/html;
+index index.php;
+
+- root specifies where NGINX looks for website files.
+- index identifies the default file for directory requests.
+
+
+Both NGINX and WordPress access the same WordPress files through their shared Docker volume.
+
+
+4. The location block
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
+
+location / handles requests matching the root URL prefix.
+
+try_files checks:
+    1. Does the requested file exist?
+    2. Does the requested directory exist?
+    3. Otherwise, internally route the request to index.php, preserving the query arguments.
+
+This is important because WordPress uses URLs such as /sample-page/, 
+even though there may be no physical sample-page directory.
+
+
+5. PHP-FPM communication
+location ~ \.php$ {
+    include fastcgi_params;
+    fastcgi_pass wordpress:9000;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTPS on;
+    fastcgi_param HTTP_HOST $http_host;
+    fastcgi_param SERVER_PORT 8443;
+}
+
+Directive	                    Purpose
+location ~ \.php$	            Matches URLs ending in .php
+include fastcgi_params	        Loads standard FastCGI parameters
+fastcgi_pass wordpress:9000	    Sends PHP requests to PHP-FPM
+SCRIPT_FILENAME	                Provides the PHP script's filesystem path
+HTTPS on	                    Indicates an HTTPS request
+HTTP_HOST $http_host	        Passes the original hostname and port
+SERVER_PORT 8443	            Supplies the external port used for your current testing
+
+What happens when someone visits https://nchairun.42.fr/sample-page/ and there is no physical /sample-page/ directory?
+NGINX internally routes the request to index.php, where WordPress handles it.

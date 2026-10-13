@@ -797,6 +797,295 @@ When NGINX receives a request for a PHP page, it forwards the request to PHP-FPM
 </details>
 
 ---
+
+## NGINX & TLS
+
+<details>
+<summary><strong>1. NGINX Architecture</strong></summary>
+
+NGINX is the **single entry point** to Inception.
+
+```text
+Browser → HTTPS/TLS → NGINX:443
+                          |
+                       FastCGI
+                          |
+                     WordPress:9000
+                          |
+                       MariaDB:3306
+```
+
+- **NGINX:** Handles HTTPS and forwards PHP requests.
+- **PHP-FPM:** Executes WordPress PHP code.
+- **MariaDB:** Stores WordPress data.
+- Only NGINX exposes a port to the host.
+- WordPress and MariaDB communicate through the internal Docker network.
+
+```yaml
+ports:
+  - "443:443"
+```
+
+</details>
+
+<details>
+<summary><strong>2. TLS (Transport Layer Security)</strong></summary>
+
+TLS secures communication between the browser and NGINX.
+
+- **Encryption:** Protects data from being read by third parties.
+- **Integrity:** Detects data modifications.
+- **Authentication:** Verifies server identity through certificates.
+
+**HTTPS = HTTP over TLS.**
+
+```nginx
+listen 443 ssl;
+ssl_protocols TLSv1.2 TLSv1.3;
+```
+
+- `listen 443 ssl`: Enables HTTPS on port 443.
+- `ssl_protocols`: Allows only TLS 1.2 and 1.3.
+
+</details>
+
+<details>
+<summary><strong>3. TLS Certificate & OpenSSL</strong></summary>
+
+A TLS certificate contains the server's identity information and public key.
+
+OpenSSL generates:
+
+| File | Purpose |
+|---|---|
+| `nginx.crt` | Public TLS certificate |
+| `nginx.key` | Secret private key |
+
+NGINX loads them using:
+
+```nginx
+ssl_certificate /etc/nginx/ssl/nginx.crt;
+ssl_certificate_key /etc/nginx/ssl/nginx.key;
+```
+
+- **Self-signed certificate:** Generated without a trusted certificate authority.
+- Encrypts connections but may trigger browser trust warnings.
+- The private key must remain secret.
+
+</details>
+
+<details>
+<summary><strong>4. NGINX Configuration Syntax</strong></summary>
+
+NGINX uses its own configuration syntax, **not PHP**.
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name nchairun.42.fr;
+}
+```
+
+- `server {}`: Defines a virtual server.
+- `{}`: Groups directives.
+- `listen`, `server_name`: NGINX directives.
+- `;`: Terminates a directive.
+- `#`: Starts a comment.
+
+</details>
+
+<details>
+<summary><strong>5. Languages & File Formats</strong></summary>
+
+| File | Language / Format |
+|---|---|
+| `default.conf` | NGINX configuration |
+| `Dockerfile` | Dockerfile syntax |
+| `docker-compose.yml` | YAML |
+| `.env` | Environment variables |
+| `init.sh` | Shell (Bash/sh) |
+| `Makefile` | Make |
+| WordPress | PHP |
+
+</details>
+
+<details>
+<summary><strong>6. Server Configuration</strong></summary>
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name nchairun.42.fr;
+}
+```
+
+- `server`: Defines a virtual server.
+- `listen`: Configures HTTPS on port 443.
+- `server_name`: Specifies the hostname handled by NGINX.
+
+**Q:** Does `server_name` resolve the domain to an IP address?
+
+**A:** No. DNS or `/etc/hosts` handles hostname resolution.
+
+</details>
+
+<details>
+<summary><strong>7. TLS Configuration</strong></summary>
+
+```nginx
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_certificate /etc/nginx/ssl/nginx.crt;
+ssl_certificate_key /etc/nginx/ssl/nginx.key;
+```
+
+- `ssl_protocols`: Allowed TLS versions.
+- `ssl_certificate`: Public certificate location.
+- `ssl_certificate_key`: Private key location.
+
+Inception requires TLS 1.2 or TLS 1.3.
+
+</details>
+
+<details>
+<summary><strong>8. WordPress Document Root</strong></summary>
+
+```nginx
+root /var/www/html;
+index index.php;
+```
+
+- `root`: Directory containing website files.
+- `index`: Default file for directory requests.
+- NGINX and WordPress share the WordPress files through a Docker volume.
+
+</details>
+
+<details>
+<summary><strong>9. WordPress URL Routing</strong></summary>
+
+```nginx
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
+```
+
+`try_files` checks:
+
+1. Whether the requested file exists (`$uri`).
+2. Whether the requested directory exists (`$uri/`).
+3. Otherwise, internally routes to `index.php`, preserving query arguments (`$args`).
+
+**Q:** What happens when `/sample-page/` has no physical directory?
+
+**A:** NGINX routes the request to `index.php`, and WordPress handles the URL.
+
+</details>
+
+<details>
+<summary><strong>10. PHP-FPM & FastCGI</strong></summary>
+
+```nginx
+location ~ \.php$ {
+    include fastcgi_params;
+    fastcgi_pass wordpress:9000;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param HTTPS on;
+    fastcgi_param HTTP_HOST $http_host;
+    fastcgi_param SERVER_PORT 8443;
+}
+```
+
+| Directive | Purpose |
+|---|---|
+| `location ~ \.php$` | Matches PHP requests |
+| `include fastcgi_params` | Loads standard FastCGI parameters |
+| `fastcgi_pass` | Forwards requests to PHP-FPM |
+| `SCRIPT_FILENAME` | Absolute path to PHP script |
+| `HTTPS on` | Indicates HTTPS |
+| `HTTP_HOST` | Passes hostname and port |
+| `SERVER_PORT` | Supplies request port |
+
+**FastCGI** is the protocol used between NGINX and PHP-FPM.
+
+- `fastcgi_pass`: Where PHP requests go.
+- `fastcgi_param`: Information sent to PHP-FPM.
+
+**Q:** Why is PHP-FPM necessary?
+
+**A:** NGINX cannot execute PHP code itself.
+
+</details>
+
+<details>
+<summary><strong>11. Final VM Configuration</strong></summary>
+
+For local testing:
+
+```yaml
+ports:
+  - "8443:443"
+```
+
+```nginx
+fastcgi_param SERVER_PORT 8443;
+```
+
+For final Inception deployment:
+
+```yaml
+ports:
+  - "443:443"
+```
+
+```nginx
+fastcgi_param SERVER_PORT 443;
+```
+
+Additional requirements:
+
+- Configure `nchairun.42.fr` to resolve to the VM's IP.
+- Set WordPress `home` and `siteurl` to `https://nchairun.42.fr`.
+- Verify HTTPS and TLS 1.2/1.3.
+- Verify WordPress links, PHP-FPM communication, and container persistence.
+
+</details>
+
+<details>
+<summary><strong>12. Useful Verification Commands</strong></summary>
+
+**Check NGINX configuration:**
+
+```bash
+docker compose -f srcs/docker-compose.yml exec nginx nginx -t
+```
+
+**Test HTTPS:**
+
+```bash
+curl -kI https://nchairun.42.fr
+```
+
+**Test TLS 1.2:**
+
+```bash
+openssl s_client -connect nchairun.42.fr:443 -tls1_2 </dev/null
+```
+
+**Test TLS 1.3:**
+
+```bash
+openssl s_client -connect nchairun.42.fr:443 -tls1_3 </dev/null
+```
+
+**Check containers:**
+
+```bash
+docker compose -f srcs/docker-compose.yml ps
+```
+
+</details>
+
+
 <!-- 
 ### NGINX
 

@@ -19,9 +19,9 @@ services:
   wordpress:
     image: wordpress:inception
     container_name: wordpress
+    restart: always
     build:
       context: ./requirements/wordpress
-    restart: always
     env_file:
       - .env
     secrets:
@@ -39,11 +39,11 @@ services:
   nginx:
     image: nginx:inception
     container_name: nginx
+    restart: always
     build:
       context: ./requirements/nginx
-    restart: always
     ports:
-      - "8443:443"
+      - "8443:443" # 443
     volumes:
       - wordpress_data:/var/www/html:ro
     networks:
