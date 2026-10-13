@@ -4,8 +4,9 @@ set -e
 
 # ------------------------ READ DB PASSWORD, PREPARE MARIADB DIRECTORY ------------------------
 DB_PASSWORD=$(cat /run/secrets/db_password)
+DB_ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
 
-if [ -z "$DB_PASSWORD" ]; 
+if [ -z "$DB_PASSWORD" ] || [ -z "$DB_ROOT_PASSWORD" ];
 then
     echo "Error: MariaDB password is empty." >&2
     exit 1
@@ -29,22 +30,39 @@ then
     # ------------------------ CREATE TEMP MARIADB SERVER ------------------------
     mariadbd    --user=mysql    --skip-networking   &     
     MARIADB_PID=$!
+    TRIES=0
 
     until   mariadb-admin   ping    --silent;                    # Wait for MariaDB to be ready
     do
+        TRIES=$((TRIES + 1))
+
+        if [ "$TRIES" -ge 30 ];
+        then
+                echo "Error: MariaDB failed to start." >&2
+                exit 1
+        fi
         sleep 1
     done
 
     # ------------------------ EXECUTE SQL INITIALIZATION ------------------------
     mariadb <<EOF
-	CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\`;
-	CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
-	GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USER}'@'%';
-	FLUSH PRIVILEGES;
+    ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_ROOT_PASSWORD}';
+    CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\`;
+    CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+    GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USER}'@'%';
+    FLUSH PRIVILEGES;
 EOF
 
+#     mariadb <<EOF
+# 	CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\`;
+# 	CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+# 	GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USER}'@'%';
+# 	FLUSH PRIVILEGES;
+# EOF
+
     # ------------------------ STOP TEMP MARIADB SERVER ------------------------
-    mariadb-admin 	shutdown               
+    mariadb-admin -u root -p"$DB_ROOT_PASSWORD" shutdown
+    # mariadb-admin 	shutdown               
     wait 			"$MARIADB_PID"
 
     # ------------------------ CREATE INITIIALIZATION "MARKER" ------------------------

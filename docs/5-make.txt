@@ -1,0 +1,41 @@
+device: ${HOME}/data/mariadb
+device: ${HOME}/data/wordpress
+
+These directories contain your persistent data:
+- MariaDB
+    WordPress settings, appearance configuration, users, posts, comments.
+- WordPress
+    Themes, plugins, uploads, and WordPress files.
+
+Even though make fclean removes Docker's named volume definitions, 
+it does not delete the underlying host directories.
+
+
+Bind-mounted data means data stored directly on your computer (the host), rather than inside a Docker container.
+
+In your Inception project, you're using bind mounts to make your WordPress and MariaDB data persistent.
+
+Host directory	    Contains
+~/data/mariadb	    WordPress users, passwords (hashed), posts, comments, settings, theme configuration
+~/data/wordpress	WordPress PHP files, installed themes, plugins, uploaded images
+
+
+----
+
+Why is this important?
+Without persistent storage, deleting a container could delete its data.
+
+
+With your bind-mounted volumes:
+    make down
+    make up
+
+Your WordPress data remains.
+
+will preserve your data as long as the host directories remain intact.
+
+---
+
+Container: Runs your application.
+Bind mount: Connects a folder on your computer to a folder inside the container.
+Persistent data: Survives container deletion and recreation.

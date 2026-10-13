@@ -8,7 +8,8 @@ RUN     apt-get update                                       && \
         -newkey      rsa:2048                                   \
         -keyout      /etc/nginx/ssl/nginx.key                   \
         -out         /etc/nginx/ssl/nginx.crt                   \
-        -subj        "/CN=nchairun.42.fr"
+        -subj        "/CN=nchairun.42.fr"                       \
+        -addext      "subjectAltName=DNS:nchairun.42.fr,DNS:localhost"
 
 EXPOSE  443
 

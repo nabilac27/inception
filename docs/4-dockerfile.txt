@@ -78,3 +78,12 @@ IMPORTANT:
 - Avoid baking passwords or secrets into images.
 - Keep the main service running in foreground.
 - One RUN or several RUN instructions can both work; combining related commands can reduce layers.
+
+---------------------------------
+File	                VS Code language
+Dockerfile	            Dockerfile
+init.sh	                Shell Script
+docker-compose.yml	    YAML
+.env                    dotenv
+default.conf (NGINX)	NGINX
+50-server.cnf (MariaDB)	INI
