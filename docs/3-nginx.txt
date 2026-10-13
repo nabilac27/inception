@@ -148,3 +148,15 @@ SERVER_PORT 8443	            Supplies the external port used for your current te
 
 What happens when someone visits https://nchairun.42.fr/sample-page/ and there is no physical /sample-page/ directory?
 NGINX internally routes the request to index.php, where WordPress handles it.
+
+File	Language / Format	VS Code Language Mode
+50-server.cnf	INI-style configuration	INI
+default.conf	NGINX configuration syntax	NGINX
+init.sh	Shell script	Shell Script
+Dockerfile	Dockerfile syntax	Dockerfile
+docker-compose.yml	YAML	YAML
+.env	Environment variables (dotenv)	DotENV
+Small distinction:
+- INI is a general configuration format used by many applications, including MariaDB.
+- NGINX has its own configuration syntax, with directives such as server, listen, and location.
+In VS Code, press Ctrl + K, then M to change the language mode of the current file.

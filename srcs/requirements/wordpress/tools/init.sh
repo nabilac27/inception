@@ -13,10 +13,10 @@ until mariadb \
     sleep 2
 done
 
-# ------------------------ MOVE TO WP DIRECTORY ------------------------
+# ------------------------ DOWNLOAD WORDPRESS ------------------------
 cd /var/www/html
-if [ ! -f wp-includes/version.php ]; then
-    cp -a /usr/src/wordpress/. /var/www/html/
+if [ ! -f "/var/www/html/wp-includes/version.php" ]; then
+    wp core download --version=6.8.3 --allow-root
 fi
 
 # ------------------------ CREATE WP CONFIG, INSTALL WP, CREATE ADDITIONAL WPUSER ------------------------
@@ -51,3 +51,4 @@ fi
 
 # ------------------------ START PHP-FPM ------------------------
 exec php-fpm8.2 -F
+

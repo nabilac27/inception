@@ -529,3 +529,79 @@ SELECT  → read/query something
 GRANT   → give permission
 DROP    → delete something ⚠️
 FLUSH   → reload privilege information
+
+
+----
+
+
+50-server.cnf 
+[mysqld]
+bind-address = 0.0.0.0
+port         = 3306
+socket       = /run/mysqld/mysqld.sock
+datadir      = /var/lib/mysql
+
+Directive	              Purpose
+[mysqld]	              Configuration section for the MariaDB server
+bind-address = 0.0.0.0	Allows MariaDB to accept connections on all container network interfaces
+port = 3306	            Sets MariaDB's TCP listening port
+socket	                Specifies the Unix socket for local connections
+datadir	                Specifies where MariaDB stores its database files
+
+
+Why bind-address = 0.0.0.0 instead of 127.0.0.1?
+- 127.0.0.1: MariaDB accepts TCP connections only from within its own container.
+- 0.0.0.0: MariaDB accepts TCP connections through its container's network interfaces, allowing WordPress to connect.
+
+
+his does not automatically expose MariaDB to the host. 
+Your Docker Compose configuration doesn't publish port 3306.
+
+
+Why /var/lib/mysql?
+This is where MariaDB stores its database files. 
+Your Docker volume mounts here, allowing the database to persist when containers are recreated.
+
+Why do we need a temporary server?
+Because MariaDB must be running before you can execute SQL commands.
+
+
+1. Initialize database files
+mariadb-install-db
+
+2. Start temporary MariaDB
+mariadbd --skip-networking &
+
+3. Execute SQL commands
+CREATE DATABASE, CREATE USER, GRANT
+
+4. Stop temporary MariaDB
+mariadb-admin shutdown
+
+5. Start final MariaDB
+
+mariadbd --user=mysql --skip-networking &
+
+
+Because of &, MariaDB starts in the background, and your script continues immediately.
+However, MariaDB needs a little time to initialize.
+Here's what happens:
+- until: Repeats the loop until the command succeeds.
+- mariadb-admin ping: Checks whether the MariaDB server is responding.
+- --silent: Suppresses normal output.
+- sleep 1: Waits one second before checking again.
+- done: Ends the loop.
+Why is this necessary?
+Without this loop, your script might execute SQL commands before MariaDB is ready, causing initialization to fail.
+
+
+First startup
+  Marker absent
+  Start temporary MariaDB → Create database and user → Create marker → Start MariaDB normally
+
+Next startup
+  Marker exists
+  Skip database/user creation → Start MariaDB normally
+
+
+  This is called a marker file or sentinel file. Its existence indicates that initialization has already been completed.

@@ -1,0 +1,80 @@
+DOCKERFILE SYNTAX AND BOILERPLATE
+================================
+
+A Dockerfile contains instructions for building a Docker image.
+Docker reads the instructions from top to bottom.
+
+MAIN BOILERPLATE:
+
+FROM debian:bookworm
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nginx && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY tools/init.sh /usr/local/bin/init.sh
+RUN chmod +x /usr/local/bin/init.sh
+
+WORKDIR /var/www/html
+EXPOSE 443
+ENTRYPOINT ["/usr/local/bin/init.sh"]
+
+---------------------------------
+
+MAIN INSTRUCTIONS:
+
+FROM        Base image, e.g. debian:bookworm.
+RUN         Execute commands during image build.
+COPY        Copy files from build context into image.
+WORKDIR     Set default working directory.
+EXPOSE      Document container listening port; does not publish it.
+ENTRYPOINT  Main executable when container starts.
+CMD         Default command or arguments; can be overridden.
+ENV         Set environment variables.
+ARG         Define build-time variables.
+USER        Set user for subsequent instructions/runtime.
+
+---------------------------------
+
+SHELL SYNTAX:
+
+&&          Run next command only if previous succeeds.
+\           Continue command on next line.
+|           Pipe output from one command to another.
+#           Comment.
+-y          Automatically answer yes to apt prompts.
+--no-install-recommends  Avoid extra recommended packages.
+rm -rf /var/lib/apt/lists/*  Remove apt package index files.
+mkdir -p    Create directories if needed.
+chmod +x    Add executable permission.
+
+---------------------------------
+
+RUN VS ENTRYPOINT VS CMD:
+
+RUN         Executes when building image.
+ENTRYPOINT  Executes when starting container.
+CMD         Supplies default command/arguments at container start.
+
+EXAMPLE:
+ENTRYPOINT ["/usr/local/bin/init.sh"]
+
+Exec form (JSON array) is preferred for signal handling.
+An init.sh should normally finish with exec to start the main foreground service.
+
+---------------------------------
+
+INCEPTION:
+NGINX:      HTTPS port 443, reverse proxy/FastCGI.
+WordPress:  PHP-FPM port 9000.
+MariaDB:    Database port 3306.
+
+IMPORTANT:
+- Dockerfile builds an IMAGE; Compose creates/runs CONTAINERS.
+- EXPOSE does not publish a port; Compose ports: does.
+- COPY source paths are relative to the build context.
+- RUN creates build-time filesystem changes.
+- Persistent data belongs in Docker volumes.
+- Avoid baking passwords or secrets into images.
+- Keep the main service running in foreground.
+- One RUN or several RUN instructions can both work; combining related commands can reduce layers.
