@@ -27,6 +27,8 @@ if [ ! -f wp-config.php ]; then
         --dbpass="$DB_PASSWORD" \
         --dbhost="mariadb:3306" \
         --allow-root
+else
+    wp config set DB_PASSWORD "$DB_PASSWORD" --allow-root
 fi
 
 if ! wp core is-installed --allow-root; then

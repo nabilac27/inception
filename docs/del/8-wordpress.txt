@@ -2,6 +2,14 @@ https://www.youtube.com/watch?v=d975dVX01ps
 
 ---
 
+Administrator: WP_ADMIN_USER, using wp_admin_password.txt
+
+
+
+Regular user (author): WP_USER, using wp_user_password.txt
+
+---
+
 Debian 12
    ↓
 our WordPress image
