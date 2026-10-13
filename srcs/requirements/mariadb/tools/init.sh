@@ -2,7 +2,7 @@
 
 set -e
 
-# ------------------------ READ DB PASSWORD ------------------------
+# ------------------------ READ DATABASE PASSWORDS -----------------------------------------
 DB_PASSWORD=$(cat /run/secrets/db_password)
 DB_ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
 
@@ -12,44 +12,38 @@ then
     exit 1
 fi
 
-# ------------------------ PREPARE MARIADB DIRECTORY ------------------------
+# ------------------------ PREPARE MARIADB DIRECTORY ---------------------------------------
 mkdir -p    /run/mysqld     /var/lib/mysql
 chown       mysql:mysql     /run/mysqld     /var/lib/mysql
 
-# ------------------------ INIT MARIADB DIRECTORY ------------------------
 if [ ! -d "/var/lib/mysql/mysql" ];
 then        
 	echo 				"Initializing MariaDB database..."
 	mariadb-install-db	--user=mysql    --datadir=/var/lib/mysql
 fi
 
-# ------------------------ INIT WORDPRESS DATABASE AND USER  ------------------------
-# if [ ! -f "/var/lib/mysql/.wordpress_initialized" ]; 
-# then
-#     echo        "Creating database and user..."
+# ------------------------ START TEMPORARY MARIADB SERVER ----------------------------------
+echo        "Synchronizing MariaDB users..."
 
-    # ------------------------ CREATE TEMP MARIADB SERVER ------------------------
-    echo        "Synchronizing MariaDB users..."
+mariadbd    --user=mysql    --skip-networking   &     
+MARIADB_PID=$!
+TRIES=0
 
-    mariadbd    --user=mysql    --skip-networking   &     
-    MARIADB_PID=$!
-    TRIES=0
+# ------------------------ WAIT FOR MARIADB TO BE READY ------------------------------------
+until mariadb -u root -e "SELECT 1" >/dev/null 2>&1;
+do
+    TRIES=$((TRIES + 1))
 
-    until mariadb -u root -e "SELECT 1" >/dev/null 2>&1;
-    do
-        TRIES=$((TRIES + 1))
+    if [ "$TRIES" -ge 30 ];
+    then
+            echo "Error: MariaDB failed to start or root socket authentication failed." >&2
+            exit 1
+    fi
 
-        if [ "$TRIES" -ge 30 ];
-        then
-                echo "Error: MariaDB failed to start or root socket authentication failed." >&2
-                exit 1
-        fi
+    sleep 1
+done
 
-        sleep 1
-    done
-
-    # ------------------------ CREATE DATABASE AND UPDATE PASSWORDS ------------------------
-
+# ------------------------ CREATE DATABASE AND SYNCHRONIZE PASSWORDS ------------------------
 mariadb -u root <<EOF
 CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\`;
 
@@ -63,24 +57,9 @@ ALTER USER 'root'@'localhost'
     OR unix_socket;
 EOF
 
-#     mariadb <<EOF
-#     ALTER USER 'root'@'localhost'
-#         IDENTIFIED VIA mysql_native_password USING PASSWORD('new_root_password')
-#         OR unix_socket;
-#     CREATE DATABASE IF NOT EXISTS \`${MARIADB_DATABASE}\`;
-#     CREATE USER IF NOT EXISTS '${MARIADB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
-#     GRANT ALL PRIVILEGES ON \`${MARIADB_DATABASE}\`.* TO '${MARIADB_USER}'@'%';
-#     FLUSH PRIVILEGES;
-# EOF
+# ------------------------ STOP TEMPORARY MARIADB SERVER ------------------------------------
+mariadb-admin -u root shutdown
+wait 			"$MARIADB_PID"
 
-    # ------------------------ STOP TEMP MARIADB SERVER ------------------------
-    mariadb-admin -u root shutdown
-    wait 			"$MARIADB_PID"
-
-    # ------------------------ CREATE INITIIALIZATION "MARKER" ------------------------
-    # touch                   /var/lib/mysql/.wordpress_initialized
-    # chown   mysql:mysql     /var/lib/mysql/.wordpress_initialized
-# fi
-
-# ------------------------ START MARIADB IN FOREGROUND ------------------------
+# ------------------------ START MARIADB IN FOREGROUND  -------------------------------------
 exec mariadbd --user=mysql

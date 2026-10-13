@@ -1,0 +1,84 @@
+https://nchairun.42.fr
+- into a custom landing page 
+- with interactive buttons that redirect users to login, registration, or the admin dashboard.
+
+
+WordPress already provides the destinations
+Button	        URL
+Home	        /
+Log In	        /wp-login.php
+Register	    /wp-login.php?action=register
+Admin Dashboard /wp-admin/
+
+Note that registration is disabled by default. 
+To enable it, 
+go to Settings → General → Membership → Anyone can register. 
+Set the default new user role to Subscriber, not Administrator.
+
+
+Make re
+    Your themes, pages, buttons, and WordPress settings 
+    are stored in the persistent WordPress files and MariaDB database.
+
+    You can rebuild your containers without losing your website customization, 
+    as long as you preserve those volumes.
+
+
+Preserve your custom landing page
+
+
+WordPress themes use a little PHP.
+
+Here's how it works:
+File	        Language	    Purpose
+index.php	    HTML + PHP	    Website structure, buttons, links
+style.css	    CSS	            Colors, layout, animations
+functions.php	PHP         	Loads CSS and other theme resources
+script.js (opt)	JavaScript	    Interactive effects and animations
+
+Why index.php instead of index.html?
+    Because WordPress uses PHP to generate dynamic content and URLs.
+
+For example, normal HTML:
+    <a href="/wp-login.php">Login</a>
+
+
+WordPress PHP:
+    <a href="<?php echo esc_url(wp_login_url()); ?>">Login</a>
+
+
+Both create a login link, but the PHP version automatically generates the correct WordPress login URL.
+
+---
+
+Twenty Twenty-Five (twentytwentyfive) is an official default WordPress theme.
+
+When you install WordPress, it comes with several preinstalled themes:
+Theme	            Description
+twentytwentyfive	Default WordPress theme for 2025
+twentytwentyfour	Default WordPress theme for 2024
+twentytwentythree	Default WordPress theme for 2023
+inception	        Your custom theme
+
+
+
+-----------
+
+change theme
+docker exec wordpress wp theme list --allow-root
+docker exec wordpress wp theme activate twentytwentyfive --allow-root
+
+https://localhost:8443/
+
+---
+
+srcs/requirements/wordpress/theme/
+├── index.php       # Landing page
+├── style.css       # Minimal black-and-white design
+├── functions.php   # Load stylesheet
+└── script.js       # Optional animations
+
+theme/
+├── index.php       # HTML + WordPress PHP
+├── style.css       # Design
+└── functions.php   # Load CSS

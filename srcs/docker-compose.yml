@@ -43,7 +43,7 @@ services:
     build:
       context: ./requirements/nginx
     ports:
-      - "8443:443" # 443
+      - "8443:443" # 443 | https://localhost:8443 (later https://nchairun.42.fr)
     volumes:
       - wordpress_data:/var/www/html:ro
     networks:
