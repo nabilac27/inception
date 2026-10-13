@@ -35,33 +35,35 @@ a {
     align-items: center;
     justify-content: space-between;
     padding: 24px 6%;
-    border-bottom: 1px solid #292929;
+    border-bottom: 1px solid #333333;
 }
 
 .logo {
     font-size: 18px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
 }
 
 .nav {
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: 28px;
     font-size: 14px;
 }
 
 .nav a {
-    transition: opacity 0.2s ease;
+    color: #aaaaaa;
+    transition: color 0.2s ease;
 }
 
 .nav a:hover {
-    opacity: 0.6;
+    color: #ffffff;
 }
 
-.nav-admin {
+.nav .nav-admin {
     padding: 10px 16px;
-    border: 1px solid #383838;
+    color: #f5f5f5;
+    border: 1px solid #444444;
     border-radius: 6px;
 }
 
@@ -73,29 +75,31 @@ a {
     align-items: center;
     justify-content: center;
     padding: 80px 24px;
-    text-align: center;
 }
 
 .hero {
-    max-width: 650px;
+    width: 100%;
+    max-width: 720px;
+    text-align: center;
 }
 
 .subtitle {
     margin-bottom: 24px;
     color: #888888;
     font-size: 12px;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 }
 
 .hero h1 {
     margin-bottom: 20px;
-    font-size: clamp(36px, 5vw, 56px);
+    font-size: clamp(36px, 5vw, 48px);
     font-weight: 600;
-    letter-spacing: -2px;
+    letter-spacing: -1.5px;
+    line-height: 1.2;
 }
 
 .description {
-    color: #999999;
+    color: #aaaaaa;
     font-size: 16px;
     line-height: 1.7;
 }
@@ -112,10 +116,11 @@ a {
 .btn {
     display: inline-block;
     padding: 14px 24px;
+    border: 1px solid transparent;
     border-radius: 6px;
     font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-primary {
@@ -124,16 +129,172 @@ a {
 }
 
 .btn-primary:hover {
-    background: #d4d4d4;
+    background: #dddddd;
 }
 
 .btn-secondary {
-    border: 1px solid #383838;
+    border-color: #444444;
     color: #f5f5f5;
 }
 
 .btn-secondary:hover {
-    background: #222222;
+    border-color: #888888;
+    background: #1a1a1a;
+}
+
+/* ------------------------ POSTS ------------------------ */
+
+.post {
+    margin-top: 24px;
+    padding: 24px;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    text-align: left;
+    overflow-wrap: break-word;
+}
+
+.post h2 {
+    margin-bottom: 12px;
+    font-size: 22px;
+    line-height: 1.4;
+}
+
+.post p {
+    margin-bottom: 16px;
+    color: #aaaaaa;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.post a {
+    color: #f5f5f5;
+}
+
+.post h2 a:hover,
+.post > a:hover {
+    text-decoration: underline;
+}
+
+/* ------------------------ POST CONTENT ------------------------ */
+
+.hero article {
+    margin-top: 24px;
+    text-align: left;
+    line-height: 1.8;
+    overflow-wrap: break-word;
+}
+
+.hero article p {
+    margin-bottom: 16px;
+}
+
+.hero article h2,
+.hero article h3 {
+    margin: 28px 0 12px;
+}
+
+.hero article ul,
+.hero article ol {
+    margin: 16px 0;
+    padding-left: 24px;
+}
+
+.hero article img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ------------------------ COMMENTS ------------------------ */
+
+.comments {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #333333;
+    text-align: left;
+}
+
+.comments h2 {
+    margin-bottom: 24px;
+}
+
+.comments ul {
+    list-style: none;
+    padding: 0;
+}
+
+.comments li {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #333333;
+    border-radius: 8px;
+}
+
+.comments .comment-author {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.comments .comment-meta {
+    margin-bottom: 12px;
+    color: #888888;
+    font-size: 13px;
+}
+
+.comments a {
+    color: #f5f5f5;
+}
+
+/* ------------------------ COMMENT FORM ------------------------ */
+
+.comment-respond {
+    margin-top: 40px;
+}
+
+.comment-respond h3 {
+    margin-bottom: 20px;
+}
+
+.comment-form p {
+    margin-bottom: 16px;
+}
+
+.comment-form label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.comment-form textarea,
+.comment-form input[type="text"],
+.comment-form input[type="email"],
+.comment-form input[type="url"] {
+    width: 100%;
+    padding: 12px;
+    background: #1a1a1a;
+    color: #f5f5f5;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.comment-form textarea:focus,
+.comment-form input:focus {
+    outline: none;
+    border-color: #888888;
+}
+
+.comment-form input[type="submit"] {
+    padding: 12px 24px;
+    background: #f5f5f5;
+    color: #111111;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.comment-form input[type="submit"]:hover {
+    background: #dddddd;
 }
 
 /* ------------------------ FOOTER ------------------------ */
@@ -141,11 +302,87 @@ a {
 .footer {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 16px;
     padding: 24px 6%;
-    border-top: 1px solid #292929;
-    color: #777777;
+    border-top: 1px solid #333333;
+    color: #888888;
     font-size: 12px;
+}
+
+.footer p {
+    margin: 0;
+}
+
+/* ------------------------ LOGIN PAGE ------------------------ */
+
+body.login {
+    background: #111111;
+    color: #f5f5f5;
+}
+
+.login #login {
+    width: 280px;
+}
+
+.login #login h1 a {
+    display: block;
+    width: auto;
+    height: auto;
+    margin-bottom: 24px;
+    background-image: none;
+    color: #f5f5f5;
+    font-size: 28px;
+    font-weight: 700;
+    text-indent: 0;
+    text-decoration: none;
+}
+
+.login form {
+    padding: 20px;
+    background: #1c1c1c;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.login label {
+    color: #f5f5f5;
+}
+
+.login input[type="text"],
+.login input[type="password"] {
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid #444444;
+    border-radius: 6px;
+}
+
+.login .forgetmenot label {
+    font-size: 12px;
+}
+
+.login .button-primary {
+    background: #f5f5f5;
+    color: #111111;
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+.login .button-primary:hover {
+    background: #dddddd;
+    color: #111111;
+}
+
+.login #nav a,
+.login #backtoblog a {
+    color: #aaaaaa;
+}
+
+.login #nav a:hover,
+.login #backtoblog a:hover {
+    color: #ffffff;
 }
 
 /* ------------------------ RESPONSIVE ------------------------ */
@@ -154,10 +391,21 @@ a {
     .header {
         flex-direction: column;
         gap: 20px;
+        padding: 20px;
     }
 
     .nav {
-        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .main {
+        padding: 48px 20px;
+    }
+
+    .hero h1 {
+        font-size: 32px;
     }
 
     .buttons {
@@ -168,11 +416,12 @@ a {
     .btn {
         width: 100%;
         max-width: 240px;
+        text-align: center;
     }
 
     .footer {
         flex-direction: column;
-        align-items: center;
         text-align: center;
+        padding: 20px;
     }
 }

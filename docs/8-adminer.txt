@@ -1,0 +1,28 @@
+a separate container running Apache, PHP, and Adminer. It uses the mysqli extension to connect to MariaDB.
+
+5. Open Adminer
+Visit:
+Adminer URL
+Adminer
+https://localhost:8443/adminer/
+
+Open
+
+Log in using these settings:
+Field	Value
+System	MySQL
+Server	mariadb
+Username	Your existing MARIADB_USER
+Password	The existing database password from your credentials
+Database	Your existing MARIADB_DATABASE
+
+
+Server: mariadb
+Username: wp_user
+Password: The contents of srcs/secrets/db_password.txt
+Database: wordpress
+
+
+Credential	                Purpose	Secret                                              file
+Application user (wp_user)	Used by WordPress and Adminer for normal database access	srcs/secrets/db_password.txt
+Database root (root)	    Administrative access to MariaDB	                        srcs/secrets/db_root_password.txt

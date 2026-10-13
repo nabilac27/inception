@@ -50,7 +50,20 @@ services:
       - inception
     depends_on:
       - wordpress
-  
+      - adminer
+
+# ------------------------ DOCKER SERVICE: ADMINER ------------------------
+  adminer:
+    image: adminer:inception
+    container_name: adminer
+    restart: always
+    build:
+      context: ./requirements/bonus/adminer
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+
 # ------------------------ DOCKER SECRETS ------------------------
 secrets:
   db_password:

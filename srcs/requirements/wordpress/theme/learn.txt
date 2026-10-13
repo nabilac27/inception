@@ -1,0 +1,74 @@
+srcs/requirements/wordpress/theme/
+├── index.html       # Custom landing page
+├── index.php        # Reads index.html as the fallback
+├── posts.html       # Static HTML layout for the Posts page
+├── page-posts.php   # Retrieves and displays published posts
+├── single.php       # Displays individual posts and comments
+├── style.css        # Custom dark styling for website and login
+└── functions.php    # WordPress functionality and login customization
+
+Wordpress Navigation
+Button	         URL	                        Purpose
+Home	            /	                           Custom landing page
+Posts	            /posts/	                     Lists published WordPress posts
+Log In	         /wp-login.php	               WordPress login page
+Register	         /wp-login.php?action=register	WordPress registration, if enabled
+Admin Dashboard	/wp-admin/	                  Manage content and settings
+
+
+
+
+The main difference is that a 
+static website serves predefined content, 
+while a dynamic website can generate or change content based on users, databases, or requests.
+
+
+----
+
+For this project, the bonus part is intended to be simple.
+
+A Dockerfile must be written for each additional service. Thus, each service will run
+inside its own container and will have, if necessary, its dedicated volume.
+Bonus list:
+    • Set up redis cache for your WordPress website in order to properly manage the
+    cache.
+
+    • Set up a FTP server container pointing to the volume of your WordPress website.
+
+    • Create a simple static website in the language of your choice except PHP (yes, PHP
+    is excluded). For example, a showcase site or a site for presenting your resume.
+
+    • Set up Adminer. | lightweight, web-based database management too
+
+    • Set up a service of your choice that you think is useful. During the defense, you
+    will have to justify your choice
+
+
+
+Browser
+   |
+   v
+NGINX
+   |
+   +── WordPress ──> MariaDB
+   |
+   +── Adminer ────> MariaDB
+
+---
+
+1. Adminer
+   A lightweight web interface for inspecting your MariaDB database. One extra container, a Dockerfile, and NGINX routing.
+
+2. Static website
+   Build a separate HTML/CSS website in its own container. 
+   You're already familiar with HTML and CSS, so the coding itself should be comfortable.
+
+
+3. Redis cache
+   Add Redis as a service, connect WordPress through a compatible cache plugin, and verify that caching actually works.
+
+
+4. FTP server
+   Configure an FTP container, credentials, passive ports, permissions, and access to your WordPress volume.
+
+5. Custom service of your choice

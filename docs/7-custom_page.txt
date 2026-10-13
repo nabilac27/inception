@@ -69,16 +69,3 @@ docker exec wordpress wp theme list --allow-root
 docker exec wordpress wp theme activate twentytwentyfive --allow-root
 
 https://localhost:8443/
-
----
-
-srcs/requirements/wordpress/theme/
-├── index.php       # Landing page
-├── style.css       # Minimal black-and-white design
-├── functions.php   # Load stylesheet
-└── script.js       # Optional animations
-
-theme/
-├── index.php       # HTML + WordPress PHP
-├── style.css       # Design
-└── functions.php   # Load CSS

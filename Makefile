@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/13 21:47:20 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/14 00:21:48 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,7 @@ secrets:
 # ------------------------ MARIADB ROOT ------------------------
 	if [ ! -s $(SECRETS_DIR)/db_root_password.txt ]; 								\
 	then 																			\
-		read -r -s -p "[MariaDB] root password: " password || exit 1; echo; 		\
+		read -r -s -p "[MariaDB]   root password  : " password || exit 1; echo; 	\
 		[ -n "$$password" ] || exit 1; 												\
 		umask 077; 																	\
 		printf "%s" "$$password" > $(SECRETS_DIR)/db_root_password.txt; 			\
@@ -48,7 +48,7 @@ secrets:
 # ------------------------ MARIADB USER ------------------------
 	if [ ! -s $(SECRETS_DIR)/db_password.txt ]; 									\
 	then 																			\
-		read -r -s -p "[MariaDB] user password: " password || exit 1; echo; 		\
+		read -r -s -p "[MariaDB]   user password  : " password || exit 1; echo; 	\
 		[ -n "$$password" ] || exit 1; 												\
 		umask 077;																	\
 		printf "%s" "$$password" > $(SECRETS_DIR)/db_password.txt; 					\
@@ -57,7 +57,7 @@ secrets:
 # ------------------------ WORDPRESS CREDENTIALS ------------------------
 	if [ ! -s $(SECRETS_DIR)/credentials.txt ]; 									\
 	then 																			\
-		read -r -s -p "[WordPress] admin password: " admin || exit 1; echo; 		\
+		read -r -s -p "[WordPress] admin password : " admin || exit 1; echo; 		\
 		[ -n "$$admin" ] || exit 1; 												\
 		read -r -s -p "[WordPress] author password: " author || exit 1; echo; 		\
 		[ -n "$$author" ] || exit 1; 												\
