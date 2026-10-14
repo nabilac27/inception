@@ -1,0 +1,53 @@
+
+Besides init.sh, the main file you need to check is srcs/docker-compose.yml. Your environment variables must be passed into the WordPress container there.
+Files to check
+File	What to change
+srcs/.env	Rename WP_AUTHOR to WP_USER and WP_AUTHOR_EMAIL to WP_USER_EMAIL.
+srcs/docker-compose.yml	Update the WordPress service's environment: section to use the new variable names.
+srcs/requirements/wordpress/tools/init.sh	Update all references to the renamed variables.
+Makefile	Only if it references either old variable name.
+WordPress Dockerfile	Only if it explicitly references either old variable name.
+
+---
+
+
+https://localhost:8443/
+https://localhost:8443/adminer/
+https://localhost:8443/website/
+
+
+1. Adminer
+   A lightweight web interface for inspecting your MariaDB database. One extra container, a Dockerfile, and NGINX routing.
+
+2. Static website
+   Build a separate HTML/CSS website in its own container. 
+   You're already familiar with HTML and CSS, so the coding itself should be comfortable.
+
+
+3. Redis cache
+   Add Redis as a service, connect WordPress through a compatible cache plugin, and verify that caching actually works.
+
+
+4. FTP server
+   Configure an FTP container, credentials, passive ports, permissions, and access to your WordPress volume.
+
+5. Custom service of your choice
+
+
+
+
+
+--------
+
+If you want to test using localhost
+You can temporarily override WordPress's URLs with WP-CLI:
+
+docker exec wordpress wp option update home 'https://localhost:8443' --allow-root --path=/var/www/html
+docker exec wordpress wp option update siteurl 'https://localhost:8443' --allow-root --path=/var/www/html
+
+
+---
+
+docker compose -f srcs/docker-compose.yml restart wordpress nginx
+
+curl -k -I https://localhost:8443/

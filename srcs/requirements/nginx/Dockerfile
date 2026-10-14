@@ -13,6 +13,7 @@ RUN     apt-get update                                       && \
 
 EXPOSE  443
 
-COPY    conf/default.conf    /etc/nginx/conf.d/default.conf
+COPY    requirements/nginx/conf/default.conf    /etc/nginx/conf.d/default.conf
+COPY    requirements/bonus/website/             /var/www/static/website/
 
 CMD     ["nginx", "-g", "daemon off;"]

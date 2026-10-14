@@ -1,0 +1,95 @@
+Volumes and persistent storage
+USER_DOC.md and DEV_DOC.md
+port 443
+Your volume configuration matches the required host-path approach
+
+HTTPS not HTTP 
+----
+Browser
+   │
+   │ HTTPS to localhost:8443
+   ▼
+Host port 8443
+   │
+   ▼
+NGINX container port 443
+   │
+   │ FastCGI
+   ▼
+WordPress + PHP-FPM
+
+
+1. Why do you need volumes?
+Your MariaDB container stores your WordPress database. Your WordPress container stores your website files.
+Imagine you delete and recreate the containers. Without persistent storage, you risk losing the data stored inside them.
+Volumes let the data survive independently of the containers.
+MariaDB container
+Database files: /var/lib/mysql
+
+Persistent storage
+Your database survives container recreation
+
+
+Your project needs two separate storage locations:
+- mariadb_data for your database.
+- wordpress_data for your WordPress files.
+2. What's the difference between a named volume and a bind mount?
+Think of it as the difference between asking Docker to manage a storage box for you and telling Docker exactly which folder to use.
+
+A. Named volume
+volumes:
+  - mariadb_data:/var/lib/mysql
+
+
+You tell Docker: "Give this container persistent storage named mariadb_data."
+Docker manages where that storage lives.
+
+
+
+
+B. Bind mount
+volumes:
+  - /home/nchairun/data/mariadb:/var/lib/mysql
+
+
+You tell Docker: "Use this exact folder on my computer."
+You choose the host directory directly.
+
+
+
+3. So what does your current configuration mean?
+You have this:
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/nchairun/data/mariadb
+
+
+Let's translate each line:
+Line	Meaning
+mariadb_data	The Docker volume's name
+driver: local	Uses Docker's local volume driver
+driver_opts	Customizes how the driver creates storage
+type: none	Does not specify a filesystem type
+o: bind	Uses a bind mount
+device: ...	Specifies the actual host directory
+The important part: mariadb_data is a named volume, but its storage is backed by a specific host folder because of o: bind.
+That is what we meant when we said it was a named volume with bind-backed storage.
+4. Why is this confusing for Inception?
+Your subject says two things:
+1. You must use Docker named volumes.
+2. Their data must be stored under /home/nchairun/data.
+Your current configuration explicitly places the data there, but uses bind-backed storage. A plain named volume avoids that bind mount, but Docker does not automatically place it in that directory.
+I don't want you to change a working database configuration based on a guess about your evaluator's expectations.
+5. What you need to remember for now
+- Container: Runs a service such as MariaDB.
+- Volume: Keeps data when containers are recreated.
+- Named volume: Docker-managed storage identified by a name.
+- Bind mount: Connects a container to a specific host directory.
+- /var/lib/mysql: Where MariaDB stores its database files inside the container.
+- /home/nchairun/data/mariadb: The host directory specified in your current configuration.
+You don't need to memorize every driver_opts detail yet. The central concept is that containers run your services, while volumes preserve their data.
+And your current database is working, so let's protect it while figuring out the exact storage requirement rather than changing things blindly.
