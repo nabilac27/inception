@@ -46,6 +46,10 @@ else
     wp  config set  DB_HOST     "mariadb:3306"      --allow-root
 fi
 
+# ------------------------ CONFIGURE REDIS -------------------------------------------------
+wp config set WP_REDIS_HOST "redis" --allow-root
+wp config set WP_REDIS_PORT 6379 --raw --allow-root
+
 
 # ------------------------ INSTALL CUSTOM THEME --------------------------------------------
 if [ -d "/usr/local/share/inception-theme" ];
@@ -66,6 +70,15 @@ then
         --skip-email                          \
         --allow-root
 fi
+
+# ------------------------ INSTALL REDIS OBJECT CACHE --------------------------------------
+if ! wp plugin is-installed redis-cache --allow-root;
+then
+    wp plugin install redis-cache --activate --allow-root
+fi
+
+wp plugin activate redis-cache --allow-root --quiet
+wp redis enable --allow-root
 
 # ------------------------ CREATE POSTS PAGE ---------------------------------------
 if ! wp post get posts --post_type=page --field=ID --allow-root >/dev/null 2>&1; then
@@ -88,6 +101,11 @@ fi
 # ------------------------ UPDATE WORDPRESS URL ------------------------------------
 # wp option update home "https://${DOMAIN_NAME}" --allow-root
 # wp option update siteurl "https://${DOMAIN_NAME}" --allow-root
+
+# ------------------------ UPDATE WORDPRESS URL ------------------------------------ # redis related?
+wp option update home "https://localhost:8443" --allow-root
+wp option update siteurl "https://localhost:8443" --allow-root
+
 
 # ------------------------ CREATE / UPDATE WORDPRESS ADMIN PASSWORD ------------------------
 wp  user update "$WP_ADMIN_USER"             \

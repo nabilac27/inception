@@ -1,0 +1,26 @@
+Docker's default image tag
+
+A Docker image name follows this format:
+    repository:tag
+
+For example:
+    image: inception-mariadb:latest
+
+---
+
+- inception-mariadb is the image name.
+- latest is the tag.
+
+---
+
+| Tag         | Example              | Meaning                 |
+|-------------|----------------------|-------------------------|
+| latest      | mariadb:latest       | Default tag             |
+| 1.0         | mariadb:1.0          | Custom version          |
+| 1.0.0       | mariadb:1.0.0        | Semantic version        |
+| dev         | mariadb:dev          | Development             |
+| test        | mariadb:test         | Testing                 |
+| stable      | mariadb:stable       | Stable release          |
+| bookworm    | mariadb:bookworm     | Debian Bookworm variant |
+| inception   | mariadb:inception    | Custom project tag      |
+| v1          | mariadb:v1           | Custom version          |

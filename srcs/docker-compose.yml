@@ -64,6 +64,16 @@ services:
       - inception
     depends_on:
       - mariadb
+    
+# ------------------------ DOCKER SERVICE: REDIS ------------------------
+  redis:
+    image: redis:inception
+    container_name: redis
+    restart: always
+    build:
+      context: ./requirements/bonus/redis
+    networks:
+      - inception
 
 # ------------------------ DOCKER SECRETS ------------------------
 secrets:

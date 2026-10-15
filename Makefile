@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/15 14:42:19 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/15 16:55:14 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -104,7 +104,7 @@ clean:
 
 fclean:
 	$(COMPOSE) down --rmi all --volumes
-	rm -rf "$(DATA_DIR)/mariadb" "$(DATA_DIR)/wordpress"
+# 	rm -rf "$(DATA_DIR)/mariadb" "$(DATA_DIR)/wordpress"
 	rm -f $(SECRET_FILES)
 
 re: down
@@ -196,3 +196,7 @@ check-wordpress-detail:
 # 			   echo "Check logs with: make logs"; exit 1 ;; \
 # 		esac; \
 # 	fi
+
+
+# TO DELETE MARIADB VOL IN HOST PC
+# docker run --rm -v "$HOME/data:/data" alpine sh -c 'rm -rf /data/mariadb'
