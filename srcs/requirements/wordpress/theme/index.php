@@ -24,34 +24,57 @@ if (is_front_page()) {
     </head>
 
     <body>
-        <header class="header">
-            <a href="/" class="logo">INCEPTION</a>
 
-            <nav class="nav">
-                <a href="/">Home</a>
-                <a href="/posts/">Posts</a>
+    <!-- ------------------------ HEADER ------------------------ -->
+<header class="header">
+    <a href="/" class="logo">INCEPTION</a>
 
-                <?php if (is_user_logged_in()) : ?>
-                    <?php $current_user = wp_get_current_user(); ?>
-                    <a href="/wp-admin/">
-                        You're logged in as <?php echo esc_html($current_user->user_login); ?>
+    <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/posts/">Posts</a>
+        <a href="<?php echo esc_url(home_url('/bonus/')); ?>">Bonus</a>
+
+        <?php if (is_user_logged_in()) : ?>
+
+            <?php
+                $user = wp_get_current_user();
+                $is_admin = in_array('administrator', (array) $user->roles, true);
+            ?>
+
+            <div class="user-dropdown">
+                <a href="<?php echo esc_url(admin_url()); ?>"
+                   class="<?php echo $is_admin ? 'nav-admin' : 'nav-user'; ?>">
+                    <?php echo esc_html($user->user_login); ?> ↗
+                </a>
+
+                <div class="dropdown-menu">
+                    <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">
+                        Log out ↗
                     </a>
-                <?php else : ?>
-                    <a href="/wp-login.php">Log in</a>
-                <?php endif; ?>
+                </div>
+            </div>
 
-                <a href="/wp-admin/" class="nav-admin">Admin ↗</a>
-            </nav>
-        </header>
+        <?php else : ?>
+
+            <a href="<?php echo esc_url(wp_login_url()); ?>" class="nav-guest">
+                Guest Mode
+            </a>
+
+        <?php endif; ?>
+    </nav>
+</header>
 
         <main class="main">
             <div class="hero">
                 <p class="subtitle">42 SCHOOL · DOCKER PROJECT</p>
                 <h1>Welcome to Inception</h1>
                 <p class="description">
-                    A simple WordPress website powered by Docker.
+                    A simple WordPress website powered by
+                    <a href="https://docs.docker.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="docker-link">Docker</a>.
                 </p>
-
                 <div class="buttons">
                     <a href="/posts/" class="btn btn-primary">
                         Explore Posts →
@@ -71,10 +94,21 @@ if (is_front_page()) {
             </div>
         </main>
 
-        <footer class="footer">
-            <p>© 2026 Nabila C. All rights reserved.</p>
-            <p>NGINX · WordPress · MariaDB</p>
-        </footer>
+
+<!-- ------------------------ FOOTER ------------------------ -->
+
+<footer class="footer">
+    <p>© 2026 Nabila C. All rights reserved.</p>
+
+    <p class="footer-links">
+        <a href="https://nginx.org/" target="_blank" rel="noopener noreferrer">NGINX</a>
+        ·
+        <a href="https://wordpress.org/documentation/" target="_blank" rel="noopener noreferrer">WordPress</a>
+        ·
+        <a href="https://mariadb.com/docs" target="_blank" rel="noopener noreferrer">MariaDB</a>
+    </p>
+</footer>
+
 
         <?php wp_footer(); ?>
     </body>

@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/15 16:55:14 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/15 21:54:06 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -200,3 +200,20 @@ check-wordpress-detail:
 
 # TO DELETE MARIADB VOL IN HOST PC
 # docker run --rm -v "$HOME/data:/data" alpine sh -c 'rm -rf /data/mariadb'
+
+
+# TO SEE WORDPRESS DEFAULT THEME
+# docker exec wordpress wp theme list --allow-root
+# docker exec wordpress wp theme activate twentytwentyfive --allow-root
+
+# TO CHANGE AND UPDATE WORDPRESS THEME
+# tar -C srcs/requirements/wordpress/theme -cf - . \
+    | docker exec -i wordpress tar -xf - \
+        -C /var/www/html/wp-content/themes/inception \
+        --no-same-owner
+
+
+
+# https://localhost:8443/
+# https://localhost:8443/bonus-static-web/
+# https://localhost:8443/bonus-adminer/

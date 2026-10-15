@@ -11,3 +11,21 @@ RUN     apt-get update                && \
         rm -rf /var/lib/apt/lists/*
 
 EXPOSE  80
+
+# -----------------------------------------------------------------------------------------------
+# Browser
+#    |
+#    | HTTPS :8443/bonus-adminer/
+#    v
+# NGINX
+#    |
+#    | HTTP (Docker internal network)
+#    v
+# Adminer (Apache + PHP)
+#    |
+#    | MariaDB protocol :3306
+#    v
+# MariaDB
+#    |
+#    v
+# WordPress Database
