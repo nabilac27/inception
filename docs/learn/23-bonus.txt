@@ -2,7 +2,7 @@
 Besides init.sh, the main file you need to check is srcs/docker-compose.yml. Your environment variables must be passed into the WordPress container there.
 Files to check
 File	What to change
-srcs/.env	Rename WP_AUTHOR to WP_USER and WP_AUTHOR_EMAIL to WP_USER_EMAIL.
+srcs/.env	Rename WP_USER to WP_USER and WP_USER_EMAIL to WP_USER_EMAIL.
 srcs/docker-compose.yml	Update the WordPress service's environment: section to use the new variable names.
 srcs/requirements/wordpress/tools/init.sh	Update all references to the renamed variables.
 Makefile	Only if it references either old variable name.

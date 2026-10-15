@@ -28,7 +28,7 @@ RUN     sed -i 's|listen = /run/php/php8.2-fpm.sock|listen = 9000|' \
 # ------------------------ START WORDPRESS ------------------------
 COPY    tools/init.sh   /usr/local/bin/init.sh
 RUN     chmod +x        /usr/local/bin/init.sh
-COPY    theme/          /usr/local/share/inception-theme/
+COPY    custom-theme/   /usr/local/share/custom-theme/
 
 WORKDIR /var/www/html
 EXPOSE  9000

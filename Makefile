@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/15 21:54:06 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/15 23:56:00 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -68,7 +68,7 @@ secrets:
 		read -r -s -p "[WordPress] author password: " author || exit 1; echo; 		\
 		[ -n "$$author" ] || exit 1; 												\
 		umask 077; 																	\
-		printf "WP_ADMIN_PASSWORD=%q\nWP_AUTHOR_PASSWORD=%q\n" 						\
+		printf "WP_ADMIN_PASSWORD=%q\nWP_USER_PASSWORD=%q\n" 						\
 		"$$admin" "$$author" > $(SECRETS_DIR)/credentials.txt; 						\
 	fi
 
@@ -207,13 +207,15 @@ check-wordpress-detail:
 # docker exec wordpress wp theme activate twentytwentyfive --allow-root
 
 # TO CHANGE AND UPDATE WORDPRESS THEME
-# tar -C srcs/requirements/wordpress/theme -cf - . \
-    | docker exec -i wordpress tar -xf - \
-        -C /var/www/html/wp-content/themes/inception \
-        --no-same-owner
-
-
+# tar -C srcs/requirements/wordpress/custom-theme -cf - . \
+#     | docker exec -i wordpress tar -xf - \
+#         -C /var/www/html/wp-content/themes/custom-theme \
+#         --no-same-owner
 
 # https://localhost:8443/
 # https://localhost:8443/bonus-static-web/
 # https://localhost:8443/bonus-adminer/
+
+
+#replace all occurrences automatically
+# grep -rlZ 'WP_AUTHOR' --exclude-dir=.git . | xargs -0 -r sed -i 's/WP_AUTHOR/WP_USER/g'
