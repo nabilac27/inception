@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/16 21:49:03 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/16 23:12:49 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -103,8 +103,13 @@ clean:
 	$(COMPOSE)	down --remove-orphans
 
 fclean:
-	$(COMPOSE) down --rmi all --volumes
-# 	rm -rf "$(DATA_DIR)/mariadb" "$(DATA_DIR)/wordpress"
+	$(COMPOSE) down --rmi all --volumes --remove-orphans
+	@if [ -d /goinfre ]; then 								\
+		echo "42 PC: skipping persistent data deletion"; 	\
+	else 													\
+		echo "VM: deleting persistent data"; 				\
+		sudo rm -rf $(DATA_DIR)/mariadb $(DATA_DIR)/wordpress; \
+	fi
 	rm -f $(SECRET_FILES)
 
 re: down

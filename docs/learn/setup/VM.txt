@@ -5,6 +5,14 @@ hello
 
 setup: 30Minutes
 
+---
+
+VirtualBox VM created in
+    /var/tmp/nchairun/inception-vm/Inception/
+
+virtual hard disk
+    /var/tmp/nchairun/inception-vm/Inception/inception.vdi
+
 -------------
 
 1. Check 42 Ubuntu host → VirtualBox
