@@ -7,7 +7,8 @@ setup: 30Minutes
 
 -------------
 
-42 Ubuntu host → VirtualBox → Debian 12 → Docker → Inception.
+1. Check 42 Ubuntu host → VirtualBox
+2. Install Debian 12 → Docker → Git
 
 INCEPTION - 42 LINUX VM SETUP GUIDE
 ===================================
