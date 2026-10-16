@@ -1,7 +1,6 @@
 <?php
 
 // ------------------------ POSTS PAGE ------------------------
-
 $posts_query = new WP_Query(array(
     'post_type'      => 'post',
     'post_status'    => 'publish',
@@ -12,7 +11,6 @@ get_header();
 ?>
 
 <!-- ------------------------ MAIN ------------------------ -->
-
 <main class="main posts-main">
     <section class="posts-container">
 
@@ -33,7 +31,6 @@ get_header();
                 <article class="post-card">
 
                     <!-- ------------------------ POST META ------------------------ -->
-
                     <div class="post-meta">
                         <span><?php echo esc_html(get_the_date('F j, Y')); ?></span>
                         <span class="meta-dot">·</span>
@@ -41,20 +38,17 @@ get_header();
                     </div>
 
                     <!-- ------------------------ POST TITLE ------------------------ -->
-
                     <h2 class="post-title">
                             <?php the_title(); ?>
                         </a>
                     </h2>
 
                     <!-- ------------------------ POST CONTENT ------------------------ -->
-
                     <div class="post-content">
                         <?php the_content(); ?>
                     </div>
 
                     <!-- ------------------------ COMMENT COUNT ------------------------ -->
-
                     <div class="post-card-footer">
                         <span class="comment-count">
                             <?php
@@ -69,7 +63,6 @@ get_header();
                     </div>
 
                     <!-- ------------------------ COMMENTS ------------------------ -->
-
                     <div class="post-comments">
 
                         <?php
@@ -126,7 +119,6 @@ get_header();
                         <?php endif; ?>
 
                         <!-- ------------------------ COMMENT FORM ------------------------ -->
-
                         <?php if (is_user_logged_in() && comments_open($post_id)) : ?>
 
                             <div class="comment-form-container">
@@ -161,7 +153,6 @@ get_header();
         <?php else : ?>
 
             <!-- ------------------------ EMPTY POSTS ------------------------ -->
-
             <div class="empty-posts">
                 <h2>No posts published yet.</h2>
                 <p>Your posts will appear here when you publish them.</p>

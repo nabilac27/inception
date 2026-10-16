@@ -10,7 +10,6 @@
 <?php wp_body_open(); ?>
 
 <!-- ------------------------ HEADER ------------------------ -->
-
 <header class="header">
     <a href="<?php echo esc_url(home_url('/')); ?>" class="logo">
         INCEPTION

@@ -1,12 +1,10 @@
 <?php
 
 // ------------------------ BONUS PAGE ------------------------
-
 get_header();
 ?>
 
 <!-- ------------------------ MAIN ------------------------ -->
-
 <main class="main bonus-main">
     <section class="bonus-container">
 
@@ -17,7 +15,6 @@ get_header();
         <div class="bonus-grid">
 
             <!-- ------------------------ ADMINER ------------------------ -->
-
             <a href="<?php echo esc_url(home_url('/bonus-adminer/')); ?>"
                class="bonus-card">
 
@@ -35,7 +32,6 @@ get_header();
             </a>
 
             <!-- ------------------------ STATIC WEBSITE ------------------------ -->
-
             <a href="<?php echo esc_url(home_url('/bonus-static-web/')); ?>"
                class="bonus-card">
 
@@ -53,7 +49,6 @@ get_header();
             </a>
 
             <!-- ------------------------ REDIS ------------------------ -->
-
             <div class="bonus-card bonus-card-redis">
 
                 <span class="bonus-number">

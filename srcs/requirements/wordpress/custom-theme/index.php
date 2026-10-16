@@ -1,11 +1,9 @@
 <?php
 
 // ------------------------ DEFAULT WORDPRESS TEMPLATE ------------------------
-
 get_header();
 
 // ------------------------ CONTENT ------------------------
-
 if (have_posts())
 {
     while (have_posts())
@@ -16,5 +14,4 @@ if (have_posts())
 }
 
 // ------------------------ FOOTER ------------------------
-
 get_footer();

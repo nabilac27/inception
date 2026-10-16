@@ -1,7 +1,6 @@
 <?php get_header(); ?>
 
 <!-- ------------------------ MAIN ------------------------ -->
-
 <main class="main">
     <div class="hero">
         <p class="subtitle">42 SCHOOL · DOCKER PROJECT</p>

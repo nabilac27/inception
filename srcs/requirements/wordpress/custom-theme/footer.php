@@ -1,5 +1,4 @@
 <!-- ------------------------ FOOTER ------------------------ -->
-
 <footer class="footer">
     <p>© 2026 Nabila C. All rights reserved.</p>
 

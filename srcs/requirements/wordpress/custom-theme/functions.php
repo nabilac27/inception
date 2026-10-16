@@ -1,7 +1,6 @@
 <?php
 
 // ------------------------ THEME SETUP ------------------------
-
 function inception_theme_setup()
 {
     add_theme_support('title-tag');
@@ -11,7 +10,6 @@ add_action('after_setup_theme', 'inception_theme_setup');
 
 
 // ------------------------ THEME STYLES ------------------------
-
 function inception_styles()
 {
     wp_enqueue_style(
@@ -24,7 +22,6 @@ add_action('wp_enqueue_scripts', 'inception_styles');
 
 
 // ------------------------ LOGIN PAGE TITLE ------------------------
-
 function inception_login_title()
 {
     return 'LOGIN';
@@ -40,7 +37,6 @@ add_filter('login_headerurl', 'inception_login_url');
 
 
 // ------------------------ LOGIN PAGE STYLES ------------------------
-
 function inception_login_styles()
 {
     wp_enqueue_style(
@@ -53,7 +49,6 @@ add_action('login_enqueue_scripts', 'inception_login_styles');
 
 
 // ------------------------ LOGIN REDIRECT ------------------------
-
 function inception_login_redirect($redirect_to, $requested_redirect_to, $user)
 {
     if ($user instanceof WP_User)
@@ -66,7 +61,6 @@ add_filter('login_redirect', 'inception_login_redirect', 10, 3);
 
 
 // ------------------------ LOGIN USERNAME LABEL ------------------------
-
 function inception_login_username_label($translated, $text, $domain)
 {
     if ($text === 'Username or Email Address' && $domain === 'default')
@@ -79,7 +73,6 @@ add_filter('gettext', 'inception_login_username_label', 10, 3);
 
 
 // ------------------------ HIDE REMEMBER ME ------------------------
-
 function inception_hide_remember_me()
 {
     echo '<style>
@@ -93,7 +86,6 @@ add_action('login_head', 'inception_hide_remember_me');
 
 
 // ------------------------ HIDE LOST PASSWORD LINK ------------------------
-
 function inception_hide_lost_password()
 {
     echo '<style>
