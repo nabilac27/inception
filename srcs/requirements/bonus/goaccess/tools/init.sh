@@ -5,18 +5,12 @@ set -eu
 LOG_FILE="/var/log/nginx/access.log"
 REPORT="/var/www/goaccess/index.html"
 
-echo "Waiting for NGINX access log..."
+touch "$LOG_FILE"
 
-while [ ! -f "$LOG_FILE" ]; do
-    sleep 2
-done
-
-echo "Starting GoAccess..."
-
-while true; do
-    goaccess "$LOG_FILE" \
-        --log-format=COMBINED \
-        --output="$REPORT"
-
-    sleep 10
-done
+exec goaccess /var/log/nginx/access.log \
+    --log-format=COMBINED               \
+    --real-time-html                    \
+    --output=/var/www/goaccess/index.html \
+    --ws-url=wss://nchairun.42.fr/ws    \
+    --addr=0.0.0.0                      \
+    --port=7890

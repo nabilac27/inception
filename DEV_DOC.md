@@ -2,40 +2,16 @@
 
 ## 1. Environment Setup
 
-### Prerequisites
+**Prerequisites:** Debian/Linux VM, Docker Engine, Docker Compose, Make, Git, and permission to run Docker.
 
-- Before setting up the project, ensure the following tools are installed:
-
-  - **Docker Engine**
-  - **Docker Compose**
-  - **Make**
-  - **Git**
-
-
-### Clone the Repository
-
-- Clone the project and navigate to its root directory:
+- Clone the repository:
 
     ```bash
     git clone <repository-url>
     cd inception
     ```
 
-### Configuration Files
-
-- The project uses the following configuration files:
-
-    ```bash
-    | File                 | Purpose                                                          |
-    |----------------------|------------------------------------------------------------------|
-    | `Makefile`           | Builds, starts, stops, and cleans the project                    |
-    | `srcs/docker-compose.yml` | Defines Docker services, networks, and volumes              |
-    | `srcs/.env`          | Stores environment variables and service configuration           |
-    | `srcs/requirements/` | Contains Dockerfiles, configuration files, initialization scripts|
-    | `secrets/`           | Stores sensitive credentials outside Docker images               |
-    ```
-
-- Create or update `srcs/.env` with the required environment variables:
+- Configure `srcs/.env`:
 
     ```dotenv
     MARIADB_DATABASE=wordpress
@@ -51,257 +27,107 @@
     WP_USER_EMAIL=user@example.com
     ```
 
-### Secrets Configuration
-
-- Create the secrets directory if it does not already exist:
+- The main project files are:
 
     ```bash
-    mkdir -p secrets
-    chmod 700 secrets
+    | Path                      | Purpose                                           |
+    | ------------------------- | ------------------------------------------------- |
+    | `Makefile`                | Builds, starts, stops, and cleans the stack       |
+    | `srcs/docker-compose.yml` | Defines services, networks, volumes, and secrets  |
+    | `srcs/.env`               | Stores non-sensitive configuration                |
+    | `srcs/requirements/`      | Contains Dockerfiles, configurations, and scripts |
+    | `secrets/`                | Stores local passwords and credentials            |
     ```
 
-- The project requires the following secret files:
+- **Secrets:** 
+  
+    Secrets are mounted inside the relevant containers at `/run/secrets/`. Never commit them to Git.
+
+  The Makefile prompts for missing passwords and generates:
+
+  - `secrets/db_root_password.txt` for the MariaDB root password.
+  - `secrets/db_password.txt` for the WordPress database user password.
+  - `secrets/credentials.txt` for WordPress administrator and author passwords.
+
+
+## 2. Build and Launch
+
+- Run from the repository root:
 
     ```bash
-    | File                           | Purpose                                            |
-    |--------------------------------|----------------------------------------------------|
-    | `secrets/db_root_password.txt` | MariaDB root password                              |
-    | `secrets/db_password.txt`      | MariaDB WordPress user password                    |
-    | `secrets/credentials`          | WordPress administrator and regular user passwords |
+    make          # Prepare directories, generate missing secrets, build and start
+    make down     # Stop and remove containers while preserving data
+    make re       # Rebuild and restart the stack
     ```
 
-- The `credentials` file contains shell variables used by the WordPress initialization script:
+- Alternatively, use Docker Compose directly after preparing the secrets and data directories:
 
     ```bash
-    WP_ADMIN_PASSWORD='your_admin_password'
-    WP_USER_PASSWORD='your_user_password'
+    # Build images
+    docker compose -f srcs/docker-compose.yml build
+
+    # Start containers
+    docker compose -f srcs/docker-compose.yml up -d
+
+    # Stop containers
+    docker compose -f srcs/docker-compose.yml down
     ```
 
-    Replace the example passwords with secure values.
+- The website is available at `https://nchairun.42.fr` when the domain resolves to the VM and TCP port `443` is accessible.
 
-- If the Makefile provides a `secrets` target, run `make secrets` to generate the files instead of creating them manually.
+## 3. Container and Volume Management
 
-**Security:** Keep secret files out of Git. Docker mounts the required secrets inside containers under `/run/secrets/`.
-
-## 2. Building and Launching the Project
-
-### Build Docker Images
-
-- From the project root:
-
-    ```bash
-    make build
-    ```
-
-    This builds the Docker images using the Dockerfiles in `srcs/requirements/`.
-
-### Start the Project
-
-- This prepares the required directories, builds the images, and starts the services.
-
-    ```bash
-    make up
-    ```
-
-### Stop the Project
-
-- This removes the containers and network while preserving named volumes.
+- The stack contains NGINX, WordPress, MariaDB, Redis, Adminer, and GoAccess. The static website is served by NGINX.
   
     ```bash
-    make down
-    ```
+    # List container status
+    docker compose -f srcs/docker-compose.yml ps
 
+    # View container logs
+    docker compose -f srcs/docker-compose.yml logs -f
 
-### Restart the Project
+    # Restart WordPress
+    docker compose -f srcs/docker-compose.yml restart wordpress
 
-- Rebuild and restart the project
-  
+    # Rebuild WordPress
+    docker compose -f srcs/docker-compose.yml up -d --build wordpress
 
-    ```bash
-    make down
-    make up
-    ```
+    # Open a WordPress container shell
+    docker exec -it wordpress bash
 
-**Note:** Avoid using `make re` for a normal restart if it depends on `fclean`, because that may delete persistent data.
-
-## 3. Managing Containers and Volumes
-
-### Container Management
-
-- The following commands can be used to manage and troubleshoot Docker containers.
-  
-    ```shell
-    | Action                 | Command                                                              |
-    |------------------------|----------------------------------------------------------------------|
-    | List containers        | `docker compose -f srcs/docker-compose.yml ps`                       |
-    | View logs              | `docker compose -f srcs/docker-compose.yml logs`                     |
-    | Follow logs            | `docker compose -f srcs/docker-compose.yml logs -f`                  |
-    | Restart a service      | `docker compose -f srcs/docker-compose.yml restart wordpress`        |
-    | Rebuild a service      | `docker compose -f srcs/docker-compose.yml up -d --build wordpress`  |
-    | Open a container shell | `docker exec -it wordpress bash`                                     |
-    | Stop the stack         | `make down`                                                          |
-    ```
-
-    Replace `wordpress` with `nginx`, `mariadb`, `redis`, or `adminer` to manage another service.
-
-### Volume Management
-
-- List Docker volumes:
-
-    ```bash
+    # List Docker volumes
     docker volume ls
-    ```
 
-- Inspect a specific volume:
-
-    ```bash
-    docker volume inspect <volume-name>
-    ```
-
-- List the volumes used by a running container:
-
-    ```bash
+    # Inspect WordPress mounts
     docker inspect wordpress --format '{{json .Mounts}}'
-    ```
 
-- Remove containers while preserving volumes:
-
-    ```bash
-    make down
-    ```
-
-**Warning:** Commands such as `docker compose down --volumes` and `make fclean` may delete persistent project data.
-
-### Network Management
-
-- List Docker networks:
-
-    ```bash
+    # List Docker networks
     docker network ls
     ```
 
-- Inspect the project's network:
 
-    ```bash
-    docker network inspect <network-name>
-    ```
-
-    The services communicate through the private Docker network defined in `srcs/docker-compose.yml`.
+- **Warning:** `make fclean` and volume-removal commands may delete persistent project data. Back up important data before running them.
 
 ## 4. Data Storage and Persistence
 
-### Persistent Data
-
-- The project uses Docker volumes to preserve WordPress and MariaDB data.
-
-    ```shell
-    | Service   | Container Path   | Stored Data                                   |
-    |-----------|------------------|-----------------------------------------------|
-    | MariaDB   | `/var/lib/mysql` | Databases and tables                          |
-    | WordPress | `/var/www/html`  | WordPress files, themes, plugins, and uploads |
-    ```
-
-### Host Storage
-
-- The project is configured to prepare the following host directories:
-
-    ```text
-    ~/data/mariadb/
-    ~/data/wordpress/
-    ```
-
-- The actual persistent storage location depends on the volume definitions in `srcs/docker-compose.yml`.
-
-- For Docker-managed named volumes, Docker determines the physical storage location. 
-  
-  Inspect a volume to identify its mount point:
+- MariaDB and WordPress use named Docker volumes backed by host directories.
 
     ```bash
-    docker volume inspect <volume-name>
+    | Service   | Host Directory     | Container Directory |
+    |-----------|--------------------|---------------------|
+    | MariaDB   | `~/data/mariadb`   | `/var/lib/mysql`    |
+    | WordPress | `~/data/wordpress` | `/var/www/html`     |
     ```
 
-### Persistence Behavior
+- NGINX logs and GoAccess reports use additional Docker-managed named volumes.
 
-- `make down` stops and removes containers without deleting named volumes.
-- `make up` recreates containers and reuses existing volumes.
-- Rebuilding Docker images does not normally delete persistent volume data.
-- `make fclean` may remove volumes and permanently delete stored data.
+- The host directories are created by the Makefile. Persistent volumes retain data when containers are stopped, removed, or rebuilt.
 
-### Verify Data Persistence
+- To verify persistence:
 
-1. Start the project with `make up`.
-2. Create a WordPress post or upload a file.
-3. Stop the project with `make down`.
-4. Restart it with `make up`.
-5. Verify that the post or uploaded file still exists.
+    1. Run `make up` and create a WordPress post.
+    2. Run `make down`.
+    3. Run `make up` again.
+    4. Verify that the post still exists.
 
-    If the data remains available, persistence is working correctly.
-
-## 5. Project Structure
-
-```shell
-    inception/
-    ├── Makefile
-    ├── USER_DOC.md
-    ├── DEV_DOC.md
-    ├── secrets/
-    │   ├── db_root_password.txt
-    │   ├── db_password.txt
-    │   └── credentials
-    └── srcs/
-        ├── .env
-        ├── docker-compose.yml
-        └── requirements/
-            ├── mariadb/
-            ├── nginx/
-            ├── wordpress/
-            └── bonus/
-                ├── redis/
-                └── adminer/
-```
-
-Each service directory contains its Dockerfile and any required configuration or initialization scripts.
-
-
-#### Persistent Data Storage
-
-```shell
-/
-└── home/
-    └── nchairun/
-        ├── Desktop/
-        │   └── inception/
-        │       ├── Makefile
-        │       ├── USER_DOC.md
-        │       ├── DEV_DOC.md
-        │       ├── secrets/
-        │       │   ├── db_root_password.txt
-        │       │   ├── db_password.txt
-        │       │   └── credentials
-        │       └── srcs/
-        │           ├── .env
-        │           ├── docker-compose.yml
-        │           └── requirements/
-        │               ├── mariadb/
-        │               │   ├── Dockerfile
-        │               │   ├── conf/
-        │               │   └── tools/
-        │               ├── nginx/
-        │               │   ├── Dockerfile
-        │               │   ├── conf/
-        │               │   └── tools/
-        │               ├── wordpress/
-        │               │   ├── Dockerfile
-        │               │   ├── conf/
-        │               │   ├── tools/
-        │               │   └── custom-theme/
-        │               └── bonus/
-        │                   ├── redis/
-        │                   │   └── Dockerfile
-        │                   └── adminer/
-        │                       └── Dockerfile
-        │
-        └── data/
-            ├── mariadb/        # Persistent MariaDB database files
-            └── wordpress/      # Persistent WordPress files
-```
+- `make down` preserves persistent data. Full cleanup may remove it.

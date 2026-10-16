@@ -12,6 +12,21 @@ then
     exit 1
 fi
 
+# ------------------------ VALIDATE CREDENTIALS -----------------------------------
+case "$DB_PASSWORD" in
+    *[!a-zA-Z0-9_@%+=.,:-]*)
+        echo "Error: Invalid characters in database password." >&2
+        exit 1
+        ;;
+esac
+
+case "$DB_ROOT_PASSWORD" in
+    *[!a-zA-Z0-9_@%+=.,:-]*)
+        echo "Error: Invalid characters in root password." >&2
+        exit 1
+        ;;
+esac
+
 # ------------------------ PREPARE MARIADB DIRECTORY ---------------------------------------
 mkdir -p    /run/mysqld     /var/lib/mysql
 chown       mysql:mysql     /run/mysqld     /var/lib/mysql

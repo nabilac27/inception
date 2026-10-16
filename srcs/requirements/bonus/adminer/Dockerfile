@@ -8,30 +8,12 @@ RUN     apt-get update      && \
         php8.2-mysql           \
         curl                && \
         curl -fsSL https://www.adminer.org/latest.php \
-        -o /var/www/html/index.php  && \
+        -o /var/www/html/index.php  &&    \
         rm -f /var/www/html/index.html && \
-        apt-get purge -y curl       && \
-        apt-get autoremove -y       && \
+        apt-get purge -y curl       &&    \
+        apt-get autoremove -y       &&    \
         rm -rf /var/lib/apt/lists/*
 
 EXPOSE  80
 
 CMD     ["apache2ctl", "-D", "FOREGROUND"]
-
-# -----------------------------------------------------------------------------------------------
-# Browser
-#    |
-#    | HTTPS :8443/bonus-adminer/
-#    v
-# NGINX
-#    |
-#    | HTTP (Docker internal network)
-#    v
-# Adminer (Apache + PHP)
-#    |
-#    | MariaDB protocol :3306
-#    v
-# MariaDB
-#    |
-#    v
-# WordPress Database
