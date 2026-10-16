@@ -87,3 +87,57 @@ docker-compose.yml	    YAML
 .env                    dotenv
 default.conf (NGINX)	NGINX
 50-server.cnf (MariaDB)	INI
+
+
+docker stop $(docker ps -qa)
+docker rm $(docker ps -qa)
+docker rmi -f $(docker images -qa)
+docker volume rm $(docker volume ls -q)
+docker network rm $(docker network ls -q) 2>/dev/null
+
+Command	            Effect
+docker stop	        Stops all containers
+docker rm	        Removes stopped containers
+docker rmi -f	    Force-removes Docker images
+docker volume rm	Removes Docker volumes
+docker network rm	Removes Docker networks
+2>/dev/null	        Hides error messages from the final command
+
+
+docker stop $(docker ps -qa); docker rm $(docker ps -qa); docker rmi -f $(docker images -qa); docker volume rm $(docker volume ls -q); docker network rm $(docker network ls -q) 2>/dev/null
+
+
+Image = blueprint
+
+Container = running instance
+
+Volume = persistent data
+
+Network = communication between containers
+
+----
+
+WordPress URLs for local testing
+
+docker exec wordpress wp option update home \
+  'https://localhost:8443' \
+  --allow-root --path=/var/www/html
+
+docker exec wordpress wp option update siteurl \
+  'https://localhost:8443' \
+  --allow-root --path=/var/www/html
+
+
+
+----
+
+Target             | What it does                                                     | Risk
+-------------------|------------------------------------------------------------------|------------
+make               | Builds and starts your infrastructure                            | Low
+make build         | Builds Docker images                                             | Low
+make up            | Builds and recreates containers                                  | Moderate
+make down          | Stops and removes project containers                             | Low
+make clean         | Removes project containers and orphans                           | Low
+make fclean        | Removes project images, volumes, host data, and empties secrets  | High
+make re            | Empties secret files, then rebuilds                              | High
+make eval-clean    | Removes all containers, images, volumes, and custom networks     | Very high

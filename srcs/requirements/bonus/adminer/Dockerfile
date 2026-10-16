@@ -9,11 +9,14 @@ RUN     apt-get update      && \
         curl                && \
         curl -fsSL https://www.adminer.org/latest.php \
         -o /var/www/html/index.php  && \
+        rm -f /var/www/html/index.html && \
         apt-get purge -y curl       && \
         apt-get autoremove -y       && \
         rm -rf /var/lib/apt/lists/*
 
 EXPOSE  80
+
+CMD     ["apache2ctl", "-D", "FOREGROUND"]
 
 # -----------------------------------------------------------------------------------------------
 # Browser

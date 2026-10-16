@@ -44,14 +44,31 @@ services:
         context: .
         dockerfile: requirements/nginx/Dockerfile
     ports:
-      - "8443:443" # 443 | https://localhost:8443 (later https://nchairun.42.fr)
+      - "443:443" # 443 | https://localhost:8443 (later https://nchairun.42.fr)
     volumes:
       - wordpress_data:/var/www/html:ro
+      - nginx_logs:/var/log/nginx             # GOACCESS
+      - goaccess_report:/var/www/goaccess:ro  # GOACCESS
     networks:
       - inception
     depends_on:
       - wordpress
       - adminer
+
+# ------------------------ DOCKER SERVICE: GOACCESS ------------------------
+  goaccess:
+    container_name: goaccess
+    build:
+      context: ./requirements/bonus/goaccess
+    image: goaccess:inception
+    restart: always
+    volumes:
+      - nginx_logs:/var/log/nginx:ro
+      - goaccess_report:/var/www/goaccess
+    networks:
+      - inception
+    depends_on:
+      - nginx
 
 # ------------------------ DOCKER SERVICE: ADMINER ------------------------
   adminer:
@@ -99,6 +116,9 @@ volumes:
       type: none
       o: bind
       device: ${HOME}/data/wordpress
+
+  nginx_logs:
+  goaccess_report:
 
 # ------------------------ DOCKER NETWORK ------------------------
 networks:

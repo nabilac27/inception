@@ -1,0 +1,361 @@
+# Docker PID 1 & MariaDB Initialization - Inception
+
+## 1. Common Network Ports
+
+| Port   | Purpose                 |
+|--------|-------------------------|
+| `22`   | SSH                     |
+| `80`   | HTTP                    |
+| `443`  | HTTPS                   |
+| `3306` | MariaDB/MySQL           |
+| `9000` | PHP-FPM                 |
+| `8443` | Alternative HTTPS port  |
+
+## 2. Dockerfile vs Entrypoint
+
+| Dockerfile                        | Entrypoint (`init.sh`)               |
+|-----------------------------------|--------------------------------------|
+| Runs during image build           | Runs when the container starts       |
+| Installs software                 | Initializes application data         |
+| Copies configuration files        | Reads environment variables/secrets  |
+| Defines startup instructions      | Launches the main server process     |
+
+**Key concept:**
+- Dockerfile = How the image is built.
+- Entrypoint = What happens when the container starts.
+
+## 3. MariaDB Container Lifecycle
+
+```text
+Docker Container Starts
+          |
+          v
+ENTRYPOINT executes init.sh
+          |
+          v
+Check /var/lib/mysql/mysql
+          |
+     +----+----+
+     |         |
+   Exists    Missing
+     |         |
+     |         v
+     |    Initialize MariaDB
+     |         |
+     |    Start temporary server
+     |         |
+     |    Create database/user
+     |         |
+     |    Stop temporary server
+     |         |
+     +----+----+
+          |
+          v
+exec mariadbd --user=mysql
+          |
+          v
+MariaDB becomes PID 1
+          |
+          v
+Accept WordPress connections
+          |
+          v
+Database data persists in volume
+```
+
+### First Startup
+
+MariaDB must:
+
+1. Initialize internal system tables.
+2. Create the WordPress database.
+3. Create the application database user.
+4. Configure permissions and passwords.
+5. Start the final database server.
+
+Example initialization check:
+
+```bash
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+    mariadb-install-db --user=mysql --datadir=/var/lib/mysql
+
+    # Start temporary server
+    # Create database and users
+    # Stop temporary server
+fi
+```
+
+### Subsequent Startups
+
+MariaDB must:
+
+1. Detect existing database files.
+2. Skip initialization.
+3. Preserve existing users and passwords.
+4. Start the database server normally.
+
+**Key concept:** Initialize once per fresh database volume, not once per container.
+
+## 4. Why Use a Temporary MariaDB Server?
+
+SQL commands require a running database server.
+
+```bash
+mariadbd --user=mysql --skip-networking &
+```
+
+| Part                | Meaning                                  |
+|---------------------|------------------------------------------|
+| `mariadbd`          | Start MariaDB server                     |
+| `--user=mysql`      | Run as the Linux mysql user              |
+| `--skip-networking` | Disable TCP connections                  |
+| `&`                 | Run the process in the background        |
+
+The temporary server allows the initialization script to execute SQL commands.
+
+After initialization:
+
+```bash
+mariadb-admin shutdown
+```
+
+Then start the final server:
+
+```bash
+exec mariadbd --user=mysql
+```
+
+## 5. What Is PID 1?
+
+PID stands for Process ID.
+
+**PID 1 is the first process inside a container's PID namespace.**
+
+It is normally the container's main process.
+
+Example:
+
+```text
+Docker Container
+       |
+       v
+PID 1: mariadbd
+```
+
+### Why Does PID 1 Matter?
+
+PID 1 is important for three reasons:
+
+1. **Container lifecycle**
+   - Docker tracks the container's main process.
+   - When PID 1 exits, the container stops.
+
+2. **Signal handling**
+   - Docker sends shutdown signals to PID 1.
+   - The application should handle these signals for graceful shutdown.
+
+3. **Child processes**
+   - PID 1 has special responsibilities for reaping orphaned child processes.
+   - Poor process management can leave zombie processes.
+
+**Key concept:** PID 1 determines the container's lifetime and plays an important role in clean shutdown and process management.
+
+## 6. Why Use `exec`?
+
+### Without `exec`
+
+```bash
+mariadbd --user=mysql
+```
+
+When launched from a shell script without `exec`:
+
+```text
+Docker Container
+       |
+       v
+PID 1: init.sh (shell)
+       |
+       v
+PID 7: mariadbd
+```
+
+Potential problems:
+
+- Docker sends SIGTERM to the shell.
+- The shell may not forward signals to MariaDB.
+- MariaDB may not shut down gracefully.
+- Docker may eventually force termination.
+
+### With `exec`
+
+```bash
+exec mariadbd --user=mysql
+```
+
+```text
+Docker Container
+       |
+       v
+PID 1: mariadbd
+```
+
+Advantages:
+
+- `exec` replaces the shell process.
+- MariaDB becomes PID 1.
+- Docker sends SIGTERM directly to MariaDB.
+- MariaDB can perform a graceful shutdown.
+- No unnecessary parent shell remains.
+
+**Key concept:** `exec` replaces the startup shell with the final application process.
+
+## 7. What Happens During `docker stop`?
+
+```text
+docker stop mariadb
+         |
+         v
+Docker sends SIGTERM to PID 1
+         |
+         v
+MariaDB receives SIGTERM
+         |
+         v
+MariaDB performs graceful shutdown
+         |
+         v
+MariaDB process exits
+         |
+         v
+Container stops
+```
+
+If the application does not exit within Docker's configured timeout, Docker normally sends SIGKILL.
+
+**Why is graceful shutdown important for MariaDB?**
+
+MariaDB needs an opportunity to:
+- Finish or roll back transactions.
+- Flush pending data to disk.
+- Close database files.
+- Release resources cleanly.
+
+A forced shutdown can require crash recovery on the next startup.
+
+## 8. Persistent Data vs Running Process
+
+```text
+WordPress
+    |
+    | TCP :3306
+    v
+MariaDB Container
+    |
+    | PID 1: mariadbd
+    |
+    v
+/var/lib/mysql
+    |
+    v
+Docker Volume
+```
+
+| Component        | Responsibility                          |
+|------------------|-----------------------------------------|
+| `mariadbd`       | Runs the database server                |
+| PID 1            | Main process determining container life |
+| `/var/lib/mysql` | Stores database files                   |
+| `mariadb_data`   | Preserves data across container removal |
+| Docker Network   | Connects WordPress to MariaDB           |
+
+**Important distinction:**
+
+- PID 1 keeps the container running.
+- Docker volumes preserve data after the container stops.
+- `restart: always` can restart a stopped container, but does not preserve data by itself.
+
+## 9. How to Verify PID 1
+
+```bash
+# Display container processes
+docker exec mariadb ps -eo pid,ppid,user,comm
+
+# Inspect PID 1 directly
+docker exec mariadb cat /proc/1/comm
+
+# Check MariaDB status
+docker exec mariadb mariadb-admin ping
+
+# Inspect container logs
+docker logs mariadb
+```
+
+Expected main process:
+
+```text
+PID  PPID  USER   COMMAND
+1    0     mysql  mariadbd
+```
+
+## 10. Inception Evaluation Questions
+
+**Q: What is PID 1?**
+
+PID 1 is the first process in the container's PID namespace and normally represents its main process.
+
+**Q: Why is PID 1 important?**
+
+Docker uses the main process to determine the container's lifetime and sends stop signals to it.
+
+**Q: Why use `exec mariadbd`?**
+
+To replace the initialization shell with MariaDB, making MariaDB PID 1 so it receives Docker shutdown signals directly.
+
+**Q: What happens if PID 1 exits?**
+
+The container stops.
+
+**Q: Why shouldn't MariaDB run in the background permanently?**
+
+Because the container needs a foreground main process. If the entrypoint shell exits while MariaDB runs in the background, the container stops.
+
+**Q: Why does MariaDB start twice?**
+
+The temporary server initializes the database. The final server handles normal WordPress connections.
+
+**Q: Why initialize only once?**
+
+To avoid overwriting existing database data, users, and credentials.
+
+**Q: What happens if the container is deleted?**
+
+The MariaDB process disappears, but database files survive if the persistent volume is retained.
+
+**Q: Does PID 1 preserve database data?**
+
+No. PID 1 manages the running process; Docker volumes preserve database data.
+
+## 11. Main Takeaways
+
+| Concept                 | Remember                                      |
+|-------------------------|-----------------------------------------------|
+| Dockerfile              | Builds the image                              |
+| ENTRYPOINT              | Runs the startup script                       |
+| `init.sh`               | Initializes the database when needed          |
+| `mariadb-install-db`    | Creates MariaDB system structures             |
+| Temporary server        | Allows SQL initialization                     |
+| `&`                     | Runs a process in the background              |
+| `exec`                  | Replaces the current process                  |
+| PID 1                   | Main process controlling container lifetime   |
+| SIGTERM                 | Requests graceful process termination         |
+| Docker volume           | Preserves data independently of the container |
+| `restart: always`       | Configures automatic container restarts       |
+
+### The 3 Most Important Sentences
+
+1. **PID 1 matters because Docker tracks the container's main process and sends shutdown signals to it.**
+
+2. **We use `exec mariadbd` so MariaDB replaces the initialization shell, becomes PID 1, and can shut down gracefully.**
+
+3. **MariaDB initialization happens only for a fresh database volume, while persistent storage ensures the database survives container recreation.**

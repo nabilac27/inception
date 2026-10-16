@@ -86,8 +86,8 @@ wp plugin activate redis-cache --allow-root --quiet
 wp redis enable --allow-root
 
 # ------------------------ UPDATE WORDPRESS URL --------------------------------------------
-wp option update home    "https://localhost:8443" --allow-root
-wp option update siteurl "https://localhost:8443" --allow-root
+wp option update home    "https://localhost:443" --allow-root
+wp option update siteurl "https://localhost:443" --allow-root
 
 # ------------------------ UPDATE WORDPRESS ADMIN PASSWORD ---------------------------------
 wp user update "$WP_ADMIN_USER"         \

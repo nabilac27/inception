@@ -155,3 +155,70 @@ docker exec wordpress wp option update siteurl 'https://localhost:8443' --allow-
 docker compose -f srcs/docker-compose.yml restart wordpress nginx
 
 curl -k -I https://localhost:8443/
+
+
+Prepare VM
+
+Install Debian on a virtual machine (VMware, VirtualBox, UTM, etc.).
+
+Update the system:
+    sudo apt update
+    sudo apt upgrade -y
+    Install Docker and Docker Compose.
+
+Verify they work:
+    docker --version
+    docker compose version
+    Allow your user to run Docker without sudo:
+    sudo usermod -aG docker $USER
+
+Then log out and back in.
+
+Test:
+    docker run hello-world
+
+
+---
+
+storage
+    /home/nchairun: Your personal storage. Only 2.8 GB free.
+    /goinfre: Shared temporary storage at 42. Only 7.9 GB free.
+    /var/tmp: Temporary storage on a much larger disk with 255 GB free.
+
+---
+
+- Debian virtual machine needs approximately 20–30 GB of disk space.
+
+- We can put the VM in /var/tmp instead of your home directory, 
+    but files there may be deleted automatically by the school
+
+
+---
+
+/goinfre for large files, including virtual machines, when enough space is available.
+
+/sgoinfre if their campus provides shared storage for large files.
+/var/tmp as a possible alternative when other locations are full, provided campus rules allow it.
+
+
+----
+
+Setting	Value
+
+Name	                        Inception
+Folder	                        /var/tmp/inception-nchairun
+ISO Image	                    /home/nchairun/Downloads/debian-12.12.0-amd64-netinst.iso
+Skip Unattended Installation	Yes
+RAM	                            4096 MB
+CPUs	                        2
+Virtual Hard Disk	            30 GB
+Pre-allocate Full Size	        No
+
+
+---
+
+Screenshot: Ctrl + Alt + Shift + R
+
+---
+
+https://devabdilah.medium.com/inception-42-a-comprehensive-guide-to-dockerizing-your-first-infrastructure-part-iii-a10e93e9d922

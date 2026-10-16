@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/15 23:56:00 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/16 21:49:03 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -133,7 +133,7 @@ check-wordpress:
 	$(COMPOSE) exec -T wordpress wp core is-installed --allow-root --path=/var/www/html
 	$(COMPOSE) exec -T wordpress wp option get home --allow-root --path=/var/www/html
 	$(COMPOSE) exec -T wordpress wp option get siteurl --allow-root --path=/var/www/html
-	curl -k -I https://localhost:8443/
+	curl -k -I https://localhost:443/
 
 # Check detailed WordPress status
 check-wordpress-detail:

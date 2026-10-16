@@ -1,41 +1,264 @@
-device: ${HOME}/data/mariadb
-device: ${HOME}/data/wordpress
+# Docker Volumes & Persistent Storage
 
-These directories contain your persistent data:
-- MariaDB
-    WordPress settings, appearance configuration, users, posts, comments.
-- WordPress
-    Themes, plugins, uploads, and WordPress files.
+## 1. What Is Persistent Storage?
 
-Even though make fclean removes Docker's named volume definitions, 
-it does not delete the underlying host directories.
+Persistent storage keeps application data even when containers are stopped, removed, or recreated.
 
+In Inception:
+- MariaDB stores website content, users, comments, and settings.
+- WordPress stores PHP files, themes, plugins, and uploaded media.
 
-Bind-mounted data means data stored directly on your computer (the host), rather than inside a Docker container.
+**Key concept:** Containers run applications; persistent storage preserves their data.
 
-In your Inception project, you're using bind mounts to make your WordPress and MariaDB data persistent.
+## 2. Docker Volumes vs Bind Mounts
 
-Host directory	    Contains
-~/data/mariadb	    WordPress users, passwords (hashed), posts, comments, settings, theme configuration
-~/data/wordpress	WordPress PHP files, installed themes, plugins, uploaded images
+| Docker Named Volumes                  | Bind Mounts                         |
+|---------------------------------------|-------------------------------------|
+| Managed by Docker                     | Use host filesystem paths           |
+| Identified by volume names            | Identified by host directories       |
+| Can survive container removal         | Can survive container removal        |
+| Typically stored under Docker's data  | Stored at specified host paths       |
+| Useful for database storage           | Useful for direct host file access   |
 
+**Key concept:** Both can preserve data outside the container's writable layer.
 
-----
+## 3. Inception Volume Configuration
 
-Why is this important?
-Without persistent storage, deleting a container could delete its data.
+Your project uses named Docker volumes configured with host directory bindings.
 
+Example:
 
-With your bind-mounted volumes:
-    make down
-    make up
+```yaml
+services:
+  mariadb:
+    volumes:
+      - mariadb_data:/var/lib/mysql
 
-Your WordPress data remains.
+  wordpress:
+    volumes:
+      - wordpress_data:/var/www/html
 
-will preserve your data as long as the host directories remain intact.
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME}/data/mariadb
 
----
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME}/data/wordpress
+```
 
-Container: Runs your application.
-Bind mount: Connects a folder on your computer to a folder inside the container.
-Persistent data: Survives container deletion and recreation.
+**Important:** These are named volumes backed by host directories through the local volume driver.
+
+## 4. Storage Architecture
+
+```text
+Docker Host
+    |
+    +-- ~/data/mariadb
+    |       |
+    |       v
+    |   mariadb_data
+    |       |
+    |       v
+    |   /var/lib/mysql
+    |       |
+    |       v
+    |   MariaDB Container
+    |
+    +-- ~/data/wordpress
+            |
+            v
+        wordpress_data
+            |
+            v
+        /var/www/html
+            |
+            v
+        WordPress Container
+```
+
+## 5. What Data Is Stored?
+
+| Host Directory       | Container Directory | Contents                                  |
+|----------------------|---------------------|-------------------------------------------|
+| `~/data/mariadb`     | `/var/lib/mysql`    | Database tables, users, posts, settings   |
+| `~/data/wordpress`   | `/var/www/html`     | WordPress files, themes, plugins, uploads |
+
+### MariaDB Data
+
+```text
+~/data/mariadb/
+    |
+    +-- wordpress/
+    +-- mysql/
+    +-- ibdata1
+    +-- Other database files
+```
+
+Stores:
+- WordPress posts and comments.
+- WordPress user accounts and password hashes.
+- Website settings and theme configuration.
+- Database system tables and indexes.
+
+### WordPress Data
+
+```text
+~/data/wordpress/
+    |
+    +-- wp-admin/
+    +-- wp-content/
+    |      |
+    |      +-- themes/
+    |      +-- plugins/
+    |      +-- uploads/
+    |
+    +-- wp-includes/
+    +-- wp-config.php
+```
+
+Stores:
+- WordPress application files.
+- Themes and plugins.
+- Uploaded images and media.
+- WordPress configuration files.
+
+## 6. What Happens When Containers Are Removed?
+
+```text
+make down
+    |
+    v
+Containers removed
+    |
+    v
+Host data remains
+    |
+    v
+make up
+    |
+    v
+Containers recreated
+    |
+    v
+Existing volumes mounted
+    |
+    v
+WordPress data restored
+```
+
+**Key concept:** Recreating containers does not automatically delete persistent data.
+
+## 7. What Happens With `make fclean`?
+
+This depends on your Makefile.
+
+If `make fclean` executes:
+
+```bash
+docker compose -f srcs/docker-compose.yml down --volumes
+```
+
+Docker removes the Compose-managed volume definitions.
+
+However, with your bind-backed named volumes, the underlying host directories may remain:
+
+```text
+~/data/mariadb
+~/data/wordpress
+```
+
+**Important:** If your Makefile also runs `rm -rf` on these directories, the persistent data will be deleted.
+
+Always inspect the `fclean` recipe before running it.
+
+## 8. Useful Commands
+
+```bash
+# List Docker volumes
+docker volume ls
+
+# Inspect a volume
+docker volume inspect mariadb_data
+
+# Check host data directories
+ls -la ~/data/mariadb
+ls -la ~/data/wordpress
+
+# Inspect MariaDB mounts
+docker inspect mariadb --format '{{json .Mounts}}'
+
+# Inspect WordPress mounts
+docker inspect wordpress --format '{{json .Mounts}}'
+
+# Stop containers while preserving volumes
+make down
+
+# Restart the stack
+make up
+```
+
+Docker Compose may prefix volume names with the project name. Use `docker volume ls` to find the actual names.
+
+## 9. Inception Evaluation Questions
+
+**Q: What is a Docker volume?**
+
+A persistent storage mechanism that stores data independently of a container's writable layer.
+
+**Q: What is a bind mount?**
+
+A connection between a host filesystem path and a path inside a container.
+
+**Q: What is the difference between a named volume and a bind mount?**
+
+A named volume is managed through Docker's volume system, while a bind mount directly references a host path.
+
+**Q: What does `device: ${HOME}/data/mariadb` mean?**
+
+It specifies the host directory used to back the MariaDB named volume.
+
+**Q: Why does MariaDB need persistent storage?**
+
+To preserve database records when containers are removed or recreated.
+
+**Q: Why does WordPress need persistent storage?**
+
+To preserve application files, themes, plugins, and uploaded media.
+
+**Q: Does `docker compose down` delete volumes?**
+
+No. By default, it removes containers and networks but preserves named volumes.
+
+**Q: Does `docker compose down -v` delete persistent data?**
+
+It removes Compose-managed volumes. With bind-backed named volumes, the host directories generally remain, but data deletion depends on the storage configuration and any additional cleanup commands.
+
+**Q: Does `make fclean` delete host data?**
+
+Only if the Makefile includes commands that delete those host directories or their contents.
+
+## 10. Quick Summary
+
+- Container = Runs the application
+- Volume = Persistent storage
+- Named volume = Docker-managed volume resource
+- Bind mount = Host directory mounted into a container
+- `${HOME}` = Host home directory used during Compose interpolation
+- `device` = Host path backing the volume
+- `/var/lib/mysql` = MariaDB database files
+- `/var/www/html` = WordPress application files
+- `make down` = Stop and remove containers, preserve volumes
+- `make up` = Start or recreate containers
+- `make fclean` = Cleanup behavior defined by the Makefile
+
+**One-sentence summary:**
+
+In Inception, MariaDB and WordPress use named Docker volumes backed by host directories, allowing their data to survive container removal and recreation as long as the underlying host data remains intact.

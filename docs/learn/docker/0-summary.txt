@@ -1,0 +1,149 @@
+# Docker
+
+## 1. What is Docker?
+
+Docker is a containerization platform that packages applications and their dependencies into isolated containers.
+
+| Concept        | Description                                      |
+|----------------|--------------------------------------------------|
+| Image          | Read-only template used to create containers     |
+| Container      | Running instance of an image                     |
+| Dockerfile     | Instructions to build an image                   |
+| Docker Compose | Manages multiple containers using a YAML file    |
+| Docker Network | Allows containers to communicate                 |
+| Docker Volume  | Stores persistent data                           |
+| Docker Secrets | Provides sensitive information to containers     |
+
+## 2. Virtual Machines vs Docker
+
+| Virtual Machines                  | Docker Containers                   |
+|-----------------------------------|-------------------------------------|
+| Virtualize hardware               | Virtualize at OS level              |
+| Each VM has its own guest OS      | Share the host kernel               |
+| Require more RAM and storage      | Lightweight                         |
+| Slower startup                    | Faster startup                      |
+| Stronger OS-level isolation       | Process-level isolation             |
+
+**Key concept:** VMs run complete guest operating systems, while Docker containers share the host kernel.
+
+## 3. Secrets vs Environment Variables
+
+| Docker Secrets                    | Environment Variables               |
+|-----------------------------------|-------------------------------------|
+| Store sensitive information       | Store application configuration     |
+| Mounted as files                  | Passed as key-value pairs           |
+| Accessed through `/run/secrets/`  | Accessed through `$VARIABLE`        |
+| Example: database password        | Example: database name              |
+
+Example:
+
+```bash
+# Environment variable
+MARIADB_DATABASE=wordpress
+
+# Docker secret
+DB_PASSWORD=$(cat /run/secrets/db_password)
+```
+
+**Key concept:** Secrets keep passwords separate from ordinary environment configuration and Docker images.
+
+## 4. Docker Network vs Host Network
+
+| Docker Bridge Network             | Host Network                        |
+|-----------------------------------|-------------------------------------|
+| Isolated container networking     | Shares host networking              |
+| Uses service names                | Uses host network interfaces        |
+| Supports port mapping             | No Docker port mapping              |
+| Better network separation         | Less network isolation              |
+
+Inception architecture:
+
+```text
+Browser
+   |
+   | HTTPS :8443
+   v
+ NGINX
+   |
+   +---- WordPress:9000
+   |          |
+   |          +---- MariaDB:3306
+   |          +---- Redis:6379
+   |
+   +---- Adminer:80
+```
+
+**Key concept:** Docker networks allow containers to communicate privately using service names without exposing every service to the host.
+
+## 5. Docker Volumes vs Bind Mounts
+
+| Docker Volumes                     | Bind Mounts                         |
+|------------------------------------|-------------------------------------|
+| Managed by Docker                  | Managed through host paths          |
+| Persist after container removal    | Persist on the host                 |
+| More portable                      | Depend on host directories          |
+| Ideal for databases                | Useful for development files        |
+
+Named volume example:
+
+```yaml
+volumes:
+  - mariadb_data:/var/lib/mysql
+```
+
+Bind mount example:
+
+```yaml
+volumes:
+  - /home/nchairun/data/mariadb:/var/lib/mysql
+```
+
+**Key concept:** Both preserve data. Named volumes are managed by Docker, while bind mounts directly reference host directories.
+
+A named volume can also use a bind-backed local driver configuration.
+
+## 6. Essential Docker Commands
+
+| Command                          | Purpose                         |
+|----------------------------------|---------------------------------|
+| `docker ps`                      | List running containers         |
+| `docker images`                  | List Docker images              |
+| `docker logs nginx`              | View container logs             |
+| `docker exec -it nginx bash`     | Open a container shell          |
+| `docker volume ls`               | List Docker volumes             |
+| `docker network ls`              | List Docker networks            |
+| `docker compose up -d --build`   | Build and start services        |
+| `docker compose down`            | Stop and remove containers      |
+
+## 7. Inception Evaluation Questions
+
+**Q: Why Docker instead of a Virtual Machine?**
+
+Docker is lightweight, starts faster, and shares the host kernel instead of running a complete guest operating system.
+
+**Q: Why use Docker Secrets?**
+
+To keep sensitive passwords separate from environment variables and Docker images.
+
+**Q: Why use a Docker Network?**
+
+To allow containers to communicate privately using service names.
+
+**Q: Why use Docker Volumes?**
+
+To preserve WordPress and MariaDB data even when containers are removed or recreated.
+
+**Q: Why use Docker Compose?**
+
+To define, configure, and manage multiple interconnected services in a single YAML file.
+
+## 8. Quick Summary
+
+- Image = Template
+- Container = Running application
+- Dockerfile = Image build instructions
+- Docker Compose = Multi-container management
+- Network = Container communication
+- Volume = Persistent storage
+- Secret = Sensitive credentials
+- Environment Variable = Application configuration

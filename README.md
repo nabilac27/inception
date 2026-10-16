@@ -17,21 +17,6 @@ The goal is to set up a **WordPress** website inside a **virtual machine** using
 
 The infrastructure includes **NGINX**, **WordPress + PHP-FPM**, and **MariaDB**, connected through a **Docker network** with **persistent volumes** for data storage.
 
-
-<!-- The project includes:
-
-- **NGINX**: Handles HTTPS connections using TLS 1.2 or 1.3.
-
-- **WordPress** + PHP-FPM: Runs the website.
-
-- **MariaDB**: Stores the website's data.
-
-- **Docker network**: Connects the containers.
-
-- **Docker volumes**: Keep data persistent.
-
-Each service runs in its own Docker container, and **Docker Compose** manages the entire setup. -->
-
 ## Domain
 
 ```bash
@@ -40,16 +25,7 @@ Each service runs in its own Docker container, and **Docker Compose** manages th
 
 
 ## Project Description
-<!--
-    A Project description section must also explain the use of Docker and the sources
-    included in the project. 
-    It must indicate the main design choices, as well as a
-    comparison between:
-    ◦ Virtual Machines vs Docker
-    ◦ Secrets vs Environment Variables
-    ◦ Docker Network vs Host Network
-    ◦ Docker Volumes vs Bind Mounts
--->
+
 The project uses **Docker** to run each service in its own isolated container. 
 
 Each image is built using a custom **Dockerfile**, and **Docker Compose** manages the containers, networking, volumes, and configuration.
@@ -175,39 +151,35 @@ Each image is built using a custom **Dockerfile**, and **Docker Compose** manage
 ### Project Files
 
 ```shell
-  inception/
-  ├── Makefile
-  ├── secrets/
-  │   ├── db_password.txt
-  │   └── ...
-  └── srcs/
-      ├── docker-compose.yml
-      ├── .env
-      └── requirements/
-          ├── nginx/
-          │   ├── Dockerfile
-          │   └── conf/
-          ├── wordpress/
-          │   ├── Dockerfile
-          │   ├── conf/
-          │   └── tools/
-          └── mariadb/
-              ├── Dockerfile
-              ├── conf/
-              │   └── 50-server.cnf
-              └── tools/
-                  └── init.sh
+inception/                                  # Root directory of the Inception project
+├── Makefile                                # Automates building, starting, stopping, and cleaning
+├── secrets/                                # Stores sensitive credentials and passwords
+│   ├── db_password.txt                     # MariaDB password for the WordPress database user
+│   ├── db_root_password.txt                # MariaDB root administrator password
+│   └── credentials.txt                     # WordPress administrator and regular user credentials
+└── srcs/                                   # Contains Docker infrastructure configuration
+    ├── docker-compose.yml                  # Defines services, networks, volumes, and secrets
+    ├── .env                                # Stores environment variables for service configuration
+    └── requirements/                       # Contains Dockerfiles and service configurations
+        ├── nginx/                          # HTTPS web server and reverse proxy
+        │   ├── Dockerfile                  # Builds the custom NGINX image
+        │   └── conf/                       # NGINX configuration, TLS, and request routing
+        ├── wordpress/                      # WordPress CMS and PHP-FPM service
+        │   ├── Dockerfile                  # Builds the custom WordPress image
+        │   ├── conf/                       # PHP-FPM and WordPress configuration
+        │   └── tools/                      # WordPress installation and initialization scripts
+        ├── mariadb/                        # Relational database service
+        │   ├── Dockerfile                  # Builds the custom MariaDB image
+        │   ├── conf/                       # MariaDB server configuration
+        │   │   └── 50-server.cnf           # Configures MariaDB networking and server settings
+        │   └── tools/                      # Database initialization scripts
+        │       └── init.sh                 # Initializes database, users, and permissions
+        └── bonus/                          # Optional Inception bonus services
+            └── redis/                      # In-memory object cache for WordPress
+                ├── Dockerfile              # Builds the custom Redis image
+                └── conf/                   # Redis server configuration
+                    └── redis.conf          # Configures Redis port, memory, and caching policy
 ```
-
-### Files and Directories
-
-- **Makefile**: Automates building, starting, stopping, and cleaning the infrastructure.
-- **docker-compose.yml**: Defines and manages the infrastructure.
-- **.env**: Stores environment variables.
-- **Dockerfile**: Defines how each Docker image is built.
-- **conf/**: Contains service configuration files.
-- **tools/**: Contains initialization scripts.
-- **secrets/**: Contains sensitive credentials.
 
 ---
 
@@ -307,7 +279,6 @@ AI tools were used as learning aids during the development of this project.
 
 - **Understanding concepts**: Clarifying Docker, containerization, networking, and service configuration.
 - **Debugging**: Explaining errors and suggesting possible solutions.
-
 - **Documentation**: Improving the grammar, clarity, and structure of the README.
 
 All configurations, scripts, and commands were reviewed, tested, and understood before being used.

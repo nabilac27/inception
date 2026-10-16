@@ -1,0 +1,504 @@
+# WordPress 
+
+## 1. What Is WordPress?
+
+WordPress is an open-source Content Management System (CMS), primarily written in PHP.
+
+A CMS allows users to manage website content without manually editing source code.
+
+WordPress supports:
+- Posts and pages
+- Users and roles
+- Images and uploads
+- Themes and plugins
+- Menus and settings
+- Comments
+
+**Key concept:** WordPress manages website content and dynamically generates pages using PHP and database information.
+
+## 2. CMS vs Hosting vs Website Builder
+
+| Concept         | Purpose                             | Example               |
+|-----------------|-------------------------------------|-----------------------|
+| CMS             | Manages website content             | WordPress             |
+| Hosting         | Provides infrastructure             | Hostinger, own server |
+| Website builder | Provides website creation tools     | Wix                   |
+| Database        | Stores structured application data  | MariaDB               |
+
+In Inception, we host WordPress ourselves instead of using a managed WordPress hosting service.
+
+## 3. Inception Architecture
+
+```text
+Browser
+   |
+   | HTTPS :443
+   v
+NGINX
+   |
+   | FastCGI TCP :9000
+   v
+WordPress + PHP-FPM
+   |
+   | SQL over TCP :3306
+   v
+MariaDB
+   |
+   v
+Persistent Database Volume
+```
+
+| Service   | Responsibility                       |
+|-----------|--------------------------------------|
+| NGINX     | HTTPS web server and reverse proxy   |
+| WordPress | Content management and page creation |
+| PHP-FPM   | Executes WordPress PHP code          |
+| MariaDB   | Stores website data                  |
+
+**Key concept:** NGINX receives requests, PHP-FPM executes WordPress, and MariaDB stores its data.
+
+## 4. Why Build WordPress From Debian?
+
+Inception requires building our own Docker images rather than relying on ready-made WordPress images.
+
+```text
+Debian 12
+    |
+    v
+Install PHP
+    |
+    v
+Install PHP-FPM
+    |
+    v
+Install PHP database extensions
+    |
+    v
+Install WordPress and WP-CLI
+    |
+    v
+Custom WordPress Image
+```
+
+**Key concept:** We build the application environment ourselves using a Dockerfile.
+
+## 5. PHP vs PHP-FPM vs php-mysql
+
+| Component   | Purpose                                      |
+|-------------|----------------------------------------------|
+| PHP         | Programming language used by WordPress       |
+| PHP-FPM     | Executes PHP requests using FastCGI          |
+| `php-mysql` | Provides PHP extensions for MySQL/MariaDB    |
+| MariaDB     | Stores WordPress database records            |
+
+```text
+NGINX
+  |
+  | FastCGI
+  v
+PHP-FPM
+  |
+  | Executes
+  v
+WordPress PHP
+  |
+  | PHP database extension
+  v
+MariaDB
+```
+
+**Q: Why does WordPress need PHP-FPM?**
+
+Because NGINX does not execute PHP code. PHP-FPM processes PHP requests and returns the generated response.
+
+**Q: Why install `php-mysql`?**
+
+Because WordPress needs PHP database extensions to communicate with MariaDB.
+
+## 6. SQL vs MySQL vs MariaDB
+
+| Technology | Meaning                         |
+|------------|---------------------------------|
+| SQL        | Structured Query Language       |
+| MySQL      | Relational database server      |
+| MariaDB    | MySQL-compatible database server|
+
+Example SQL:
+
+```sql
+CREATE DATABASE wordpress;
+
+SELECT * FROM wp_posts;
+
+SELECT * FROM wp_users;
+```
+
+**Key concept:** SQL is the language; MariaDB is the database software that executes SQL queries.
+
+## 7. What Does MariaDB Store?
+
+MariaDB stores:
+- Posts and pages
+- User accounts and password hashes
+- Comments
+- Website settings
+- Theme configuration
+- Plugin settings
+
+Common WordPress tables:
+
+| Table         | Purpose                  |
+|---------------|--------------------------|
+| `wp_users`    | User accounts            |
+| `wp_posts`    | Posts and pages          |
+| `wp_comments` | Comments                 |
+| `wp_options`  | Website configuration    |
+| `wp_usermeta` | User metadata            |
+
+**Important:** WordPress posts and user accounts are stored in MariaDB, not directly in the WordPress files directory.
+
+## 8. WordPress User Roles
+
+| Role          | Permissions                                      |
+|---------------|--------------------------------------------------|
+| Administrator | Manages website settings, users, themes, plugins |
+| Editor        | Manages and publishes posts from all authors     |
+| Author        | Creates and publishes their own posts            |
+| Contributor   | Writes posts but cannot publish them             |
+| Subscriber    | Manages their profile and basic account access   |
+| Super Admin   | Manages WordPress Multisite networks             |
+
+Super Admin is available only in WordPress Multisite installations.
+
+### Inception User Accounts
+
+| Account       | Role          | Purpose                         |
+|---------------|---------------|---------------------------------|
+| `WP_ADMIN_USER` | Administrator | Website administration         |
+| `WP_USER`       | Author        | Regular content publishing     |
+
+**Key concept:** Inception requires an administrator and another regular WordPress user.
+
+## 9. MariaDB Users vs WordPress Users
+
+| Account          | System    | Purpose                       |
+|------------------|-----------|-------------------------------|
+| `root`           | MariaDB   | Database administration       |
+| `wp_user`        | MariaDB   | WordPress database connection |
+| `WP_ADMIN_USER`  | WordPress | Website administration        |
+| `WP_USER`        | WordPress | Publishing content            |
+
+These are separate accounts.
+
+**Important:** The MariaDB root user is not the WordPress administrator.
+
+WordPress connects to MariaDB using:
+
+```text
+Database: wordpress
+Username: wp_user
+Password: MariaDB application password
+Server:   mariadb
+Port:     3306
+```
+
+## 10. Docker Secrets and Credentials
+
+Your documented secret files:
+
+```text
+secrets/
+├── credentials.txt
+├── db_password.txt
+└── db_root_password.txt
+```
+
+| Secret File            | Purpose                               |
+|------------------------|---------------------------------------|
+| `db_password.txt`      | MariaDB application user password     |
+| `db_root_password.txt` | MariaDB root password                 |
+| `credentials.txt`      | WordPress administrator/author credentials |
+
+Secrets are mounted inside containers under `/run/secrets/`.
+
+**Key concept:** Credentials should not be hardcoded in Dockerfiles or committed to Git.
+
+## 11. WordPress Initialization
+
+```text
+WordPress Container Starts
+           |
+           v
+Wait for MariaDB
+           |
+           v
+Read Environment Variables
+           |
+           v
+Read Docker Secrets
+           |
+           v
+Configure wp-config.php
+           |
+           v
+Install WordPress if necessary
+           |
+           v
+Create Administrator
+           |
+           v
+Create Regular User
+           |
+           v
+Configure Theme / Pages
+           |
+           v
+Start PHP-FPM
+```
+
+### First Startup
+
+WordPress must:
+1. Connect to MariaDB.
+2. Create or configure `wp-config.php`.
+3. Install WordPress.
+4. Create the administrator.
+5. Create the regular user.
+6. Configure website settings.
+7. Start PHP-FPM.
+
+### Subsequent Startups
+
+WordPress should:
+1. Reuse existing installation data.
+2. Preserve posts, users, and settings.
+3. Avoid reinstalling WordPress.
+4. Start PHP-FPM normally.
+
+**Key concept:** Initialization should be idempotent and must not overwrite existing website data.
+
+## 12. Persistent Storage
+
+Inception uses two persistent storage locations:
+
+```text
+/home/nchairun/data/
+├── mariadb/
+│   └── Database files
+└── wordpress/
+    └── WordPress application files
+```
+
+| MariaDB Storage                  | WordPress Storage                |
+|----------------------------------|----------------------------------|
+| Posts and pages                  | WordPress core files             |
+| User accounts and password hashes| Themes and plugins               |
+| Comments                         | Uploaded images                  |
+| Website settings                 | `wp-config.php`                  |
+
+### Docker Compose Volumes
+
+```yaml
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME}/data/mariadb
+
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${HOME}/data/wordpress
+```
+
+**Important:** This configuration defines Docker named volumes backed by host directory bindings.
+
+Check your applicable Inception subject and evaluation rules because some versions prohibit bind mounts for mandatory volumes.
+
+## 13. Makefile and Persistence
+
+Based on your described Makefile behavior:
+
+| Command       | Containers                  | Persistent Data          |
+|---------------|-----------------------------|--------------------------|
+| `make`        | Start                       | Preserved                |
+| `make build`  | Build images                | Preserved                |
+| `make up`     | Start/recreate as needed    | Preserved                |
+| `make down`   | Stop/remove                 | Preserved                |
+| `make clean`  | Remove containers           | Preserved                |
+| `make fclean` | Remove Docker resources     | Deleted by `rm -rf`      |
+| `make re`     | Fresh rebuild               | Deleted and recreated    |
+
+These behaviors depend on the actual Makefile recipes.
+
+### Persistence Test
+
+1. Run `make`.
+2. Install WordPress.
+3. Publish a post.
+4. Run `make down`.
+5. Run `make`.
+6. Verify that the post still exists.
+
+**Key concept:** Containers are replaceable; persistent data must survive container recreation.
+
+## 14. WordPress Slugs
+
+A slug is a URL-friendly identifier for a post or page.
+
+| Page Title | Slug      | URL         |
+|------------|-----------|-------------|
+| Home       | `home`    | `/home/`    |
+| Posts      | `posts`   | `/posts/`   |
+| Bonus      | `bonus`   | `/bonus/`   |
+
+WordPress may append `-2` when another item already uses the same slug.
+
+Example:
+
+```text
+/posts/
+   |
+   v
+WordPress finds page slug "posts"
+   |
+   v
+WordPress Template Hierarchy
+   |
+   v
+page-posts.php
+   |
+   v
+Custom Posts Page
+```
+
+### Title vs Slug vs Template
+
+| Concept  | Example           | Purpose                 |
+|----------|-------------------|-------------------------|
+| Title    | My First Post     | Human-readable name     |
+| Slug     | `my-first-post`   | URL-friendly identifier |
+| Template | `page-posts.php`  | PHP page layout         |
+
+**Key concept:** WordPress selects templates using its Template Hierarchy.
+
+## 15. Useful WordPress Commands
+
+```bash
+# Check WordPress container
+docker ps
+
+# View WordPress logs
+docker logs wordpress
+
+# Open WordPress shell
+docker exec -it wordpress bash
+
+# Check PHP version
+docker exec wordpress php -v
+
+# Check PHP database extensions
+docker exec wordpress php -m | grep -E 'mysqli|pdo_mysql'
+
+# Check WordPress installation
+docker exec wordpress wp core is-installed --allow-root
+
+# List WordPress users
+docker exec wordpress wp user list --allow-root
+
+# List WordPress posts
+docker exec wordpress wp post list --allow-root
+
+# List active plugins
+docker exec wordpress wp plugin list --allow-root
+
+# List themes
+docker exec wordpress wp theme list --allow-root
+
+# Check database connection
+docker exec wordpress wp db check --allow-root
+```
+
+## 16. Inception Evaluation Questions
+
+**Q: What is WordPress?**
+
+An open-source CMS written primarily in PHP.
+
+**Q: What is a CMS?**
+
+Software that allows users to create and manage website content without manually editing source code.
+
+**Q: Why does WordPress need MariaDB?**
+
+To store posts, users, comments, settings, and other structured website data.
+
+**Q: Why does WordPress need PHP-FPM?**
+
+To execute PHP code requested through NGINX using FastCGI.
+
+**Q: Why install php-mysql?**
+
+To provide PHP extensions for communicating with MariaDB.
+
+**Q: Why not use the official WordPress Docker image?**
+
+Because Inception requires building the application image from the permitted base distribution.
+
+**Q: What is the difference between MariaDB root and WordPress administrator?**
+
+MariaDB root administers the database server. The WordPress administrator manages the website.
+
+**Q: Why create two WordPress users?**
+
+To separate website administration from regular content publishing.
+
+**Q: Where are WordPress posts stored?**
+
+In MariaDB, usually in the `wp_posts` table.
+
+**Q: Where are WordPress themes stored?**
+
+In the WordPress filesystem, typically under `wp-content/themes/`.
+
+**Q: Why use persistent volumes?**
+
+To preserve website content and files when containers are removed or recreated.
+
+**Q: What is a WordPress slug?**
+
+A URL-friendly identifier used for posts and pages.
+
+**Q: What is the WordPress Template Hierarchy?**
+
+The system WordPress uses to determine which PHP template displays a requested page.
+
+## 17. Quick Summary
+
+- WordPress = Content Management System
+- CMS = Content Management System
+- PHP = Programming language used by WordPress
+- PHP-FPM = Executes PHP requests
+- FastCGI = Communication protocol between NGINX and PHP-FPM
+- `php-mysql` = PHP database extensions
+- MariaDB = Relational database server
+- SQL = Structured Query Language
+- `wp_user` = MariaDB application account
+- `WP_ADMIN_USER` = WordPress administrator
+- `WP_USER` = Regular WordPress user
+- `wp_posts` = WordPress posts and pages table
+- `wp_users` = WordPress user accounts table
+- Docker secrets = Sensitive credentials
+- Docker volumes = Persistent storage
+- Slug = URL-friendly identifier
+- Template Hierarchy = WordPress template selection system
+- `wp-config.php` = WordPress database/application configuration
+- WP-CLI = WordPress command-line management tool
+
+**One-sentence summary:**
+
+WordPress is a PHP-based CMS that runs through PHP-FPM, uses MariaDB to store website content, and relies on Docker volumes, secrets, and networking to operate as a persistent application inside the Inception infrastructure.
