@@ -73,6 +73,10 @@ then
         --allow-root
 fi
 
+# ------------------------ UPDATE WORDPRESS URL --------------------------------------------
+wp option update home 'https://nchairun.42.fr'      --allow-root --path=/var/www/html
+wp option update siteurl 'https://nchairun.42.fr'   --allow-root --path=/var/www/html
+
 # ------------------------ CONFIGURE CUSTOM THEME ------------------------------------------
 bash /usr/local/share/custom-theme/tools/init.sh
 
@@ -84,10 +88,6 @@ fi
 
 wp plugin activate redis-cache --allow-root --quiet
 wp redis enable --allow-root
-
-# ------------------------ UPDATE WORDPRESS URL --------------------------------------------
-wp option update home    "https://localhost:443" --allow-root
-wp option update siteurl "https://localhost:443" --allow-root
 
 # ------------------------ UPDATE WORDPRESS ADMIN PASSWORD ---------------------------------
 wp user update "$WP_ADMIN_USER"         \
