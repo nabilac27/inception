@@ -12,7 +12,6 @@
     | MariaDB        | Stores WordPress database data                     |
     | Redis          | WordPress object caching                           |
     | Adminer        | Web-based MariaDB administration                   |
-    | GoAccess       | Real-time web traffic analytics                    |
     | Static Website | Additional website served by NGINX                 |
     ```
 - All containers communicate through a private Docker network. Only NGINX exposes port `443`.
@@ -42,7 +41,6 @@
     | WordPress Login| https://nchairun.42.fr/wp-login.php         |
     | WordPress Admin| https://nchairun.42.fr/wp-admin/            |
     | Adminer        | https://nchairun.42.fr/bonus-adminer/       |
-    | GoAccess       | https://nchairun.42.fr/bonus-goaccess/      |
     | Static Website | https://nchairun.42.fr/bonus-static-web/    |
     ```
 

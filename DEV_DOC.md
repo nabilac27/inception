@@ -77,7 +77,7 @@
 
 ## 3. Container and Volume Management
 
-- The stack contains NGINX, WordPress, MariaDB, Redis, Adminer, and GoAccess. The static website is served by NGINX.
+- The stack contains NGINX, WordPress, MariaDB, Redis, Adminer. The static website is served by NGINX.
   
     ```bash
     # List container status
@@ -119,7 +119,7 @@
     | WordPress | `~/data/wordpress` | `/var/www/html`     |
     ```
 
-- NGINX logs and GoAccess reports use additional Docker-managed named volumes.
+- NGINX logs reports use additional Docker-managed named volumes.
 
 - The host directories are created by the Makefile. Persistent volumes retain data when containers are stopped, removed, or rebuilt.
 

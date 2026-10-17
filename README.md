@@ -12,11 +12,26 @@
 
 Inception is a 42 system administration project that deploys a WordPress website inside a Linux virtual machine using Docker Compose. Each service runs in its own container, built from a custom Debian-based Dockerfile.
 
-**Architecture:** Browser → NGINX (HTTPS, port 443) → WordPress (PHP-FPM, port 9000) → MariaDB (port 3306). All containers communicate over a private Docker bridge network; only NGINX publishes a host port. Named volumes persist WordPress files and MariaDB data under `~/data/`.
+- **Architecture** 
+  
+  
+  Browser → NGINX (HTTPS, port 443) → WordPress (PHP-FPM, port 9000) → MariaDB (port 3306). 
+  
+  All containers communicate over a private Docker bridge network; only NGINX publishes a host port. 
+  
+  Named volumes persist WordPress files and MariaDB data under `~/data/`.
 
-**Services:** NGINX (TLS 1.2/1.3), WordPress/PHP-FPM, MariaDB, Redis (object cache), Adminer (database administration), and GoAccess (web analytics). NGINX also serves a static bonus website.
+- **Services** 
+  
+  NGINX (TLS 1.2/1.3), WordPress/PHP-FPM, MariaDB, Redis (object cache), Adminer (database administration). NGINX also serves a static bonus website.
 
-**Sources**: srcs/docker-compose.yml defines the infrastructure, srcs/.env stores configuration, and srcs/requirements/ contains the Dockerfiles, service configurations, initialization scripts, and website files.
+- **Sources**
+  
+  srcs/docker-compose.yml defines the infrastructure
+  
+  srcs/.env stores configuration
+  
+  srcs/requirements/ contains the Dockerfiles, service configurations, initialization scripts, and website files.
 
 ### Design Choices
 
