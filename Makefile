@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/17 00:50:39 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/17 05:55:32 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -130,3 +130,82 @@ check-wordpress:
 	curl -k -I https://localhost:443/
 
 .PHONY: all secrets volumes build up down clean fclean re eval-clean check-tls check-wordpress
+
+# **************************************************************************** #
+#	CHECKS AND LOGS                                                            #
+# **************************************************************************** #
+
+# WARNING: Deletes ALL Docker containers, images, volumes, networks
+eval-clean:
+	docker stop       $$(docker ps -qa); \
+	docker rm         $$(docker ps -qa); \
+	docker rmi -f     $$(docker images -qa); \
+	docker volume rm  $$(docker volume ls -q); \
+	docker network rm $$(docker network ls -q) 2>/dev/null
+
+# ------------------------ ALL SERVICES ------------------------
+
+status:
+	$(COMPOSE) ps
+
+logs:
+	$(COMPOSE) logs --tail=30
+
+check: check-mariadb check-wordpress check-nginx \
+       check-adminer check-redis check-static
+	echo "All checks completed!"
+
+# ------------------------ MARIADB -----------------------------
+
+check-mariadb:
+	echo "=== MariaDB ==="
+	$(COMPOSE) exec -T mariadb mariadb-admin ping
+
+# ------------------------ WORDPRESS ---------------------------
+
+check-wordpress:
+	echo "=== WordPress ==="
+	$(COMPOSE) exec -T wordpress wp core is-installed \
+		--allow-root --path=/var/www/html
+	$(COMPOSE) exec -T wordpress wp option get home \
+		--allow-root --path=/var/www/html
+	$(COMPOSE) exec -T wordpress wp option get siteurl \
+		--allow-root --path=/var/www/html
+
+# ------------------------ NGINX -------------------------------
+
+check-nginx: check-tls
+	echo "=== NGINX ==="
+	$(COMPOSE) exec -T nginx nginx -t
+	curl -kfsS -o /dev/null -w "HTTPS: %{http_code}\n" \
+		https://localhost:443/
+
+check-tls:
+	echo "=== TLS ==="
+	$(COMPOSE) exec -T nginx nginx -T 2>&1 | grep ssl_protocols
+	$(COMPOSE) exec -T nginx nginx -T 2>&1 | grep -E \
+		'ssl_certificate|ssl_certificate_key'
+
+# ------------------------ ADMINER -----------------------------
+
+check-adminer:
+	echo "=== Adminer ==="
+	$(COMPOSE) exec -T adminer php -v
+	curl -kfsS -o /dev/null -w "Adminer: %{http_code}\n" \
+		https://localhost:443/adminer/
+
+# ------------------------ REDIS -------------------------------
+
+check-redis:
+	echo "=== Redis ==="
+	$(COMPOSE) exec -T redis redis-cli ping
+	$(COMPOSE) exec -T wordpress wp redis status \
+		--allow-root --path=/var/www/html
+
+# ------------------------ STATIC WEBSITE ----------------------
+
+check-static:
+	echo "=== Static Website ==="
+	curl -kfsS -o /dev/null -w "Static: %{http_code}\n" \
+		https://localhost:443/static/
+
