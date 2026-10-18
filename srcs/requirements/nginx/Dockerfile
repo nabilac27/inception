@@ -11,9 +11,10 @@ RUN     apt-get update                                       && \
         -subj        "/CN=nchairun.42.fr"                       \
         -addext      "subjectAltName=DNS:nchairun.42.fr,DNS:localhost"
 
-EXPOSE  443
-
 COPY    requirements/nginx/conf/default.conf    /etc/nginx/conf.d/default.conf
+
 COPY    requirements/bonus/website/             /var/www/static/website/
+
+EXPOSE  443
 
 CMD     ["nginx", "-g", "daemon off;"]
