@@ -130,7 +130,6 @@ Inception is a 42 system administration project that deploys a WordPress website
 - [PHP-FPM documentation](https://www.php.net/manual/en/install.fpm.php)
 - [Redis documentation](https://redis.io/docs/latest/)
 - [Adminer documentation](https://www.adminer.org/en/)
-- [GoAccess documentation](https://goaccess.io/man)
 - [Debian documentation](https://www.debian.org/doc/)
 
 ### AI Usage

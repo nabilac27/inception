@@ -11,20 +11,25 @@
     cd inception
     ```
 
-- Configure `srcs/.env`:
+- Configure `srcs/.env`, example:
 
     ```dotenv
-    MARIADB_DATABASE=wordpress
-    MARIADB_USER=wp_user
+    # ------------------------ MARIADB CONFIGURATION ---------------------
+    MARIADB_DATABASE = wordpress                # Adminer: Database
+    MARIADB_USER     = wp_user                  # Adminer: Username
 
-    DOMAIN_NAME=nchairun.42.fr
-    WP_TITLE=INCEPTION
+    # ------------------------ WORDPRESS WEBSITE -------------------------
+    DOMAIN_NAME      = nchairun.42.fr
+    WP_TITLE         = INCEPTION
+    WP_URL           = https://nchairun.42.fr
 
-    WP_ADMIN_USER=nchairun
-    WP_ADMIN_EMAIL=nchairun@example.com
+    # ------------------------ WORDPRESS ADMIN ---------------------------
+    WP_ADMIN_USER    = nchairun
+    WP_ADMIN_EMAIL   = nchairun@example.com
 
-    WP_USER=user
-    WP_USER_EMAIL=user@example.com
+    # ------------------------ WORDPRESS USER ----------------------------
+    WP_USER          = user
+    WP_USER_EMAIL    = user@example.com     
     ```
 
 - The main project files are:

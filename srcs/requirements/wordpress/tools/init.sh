@@ -69,8 +69,8 @@ then
         --allow-root
 
     wp user create "$WP_USER" "$WP_USER_EMAIL" \
-        --user_pass="$WP_USER_PASSWORD"       \
-        --role=author                         \
+        --user_pass="$WP_USER_PASSWORD"        \
+        --role=contributor                      \
         --allow-root
 fi
 

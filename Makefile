@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/17 21:01:10 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/18 12:26:40 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -56,11 +56,11 @@ secrets:
 	then 																			\
 		read -r -s -p "[WordPress] admin password : " admin || exit 1; echo; 		\
 		[ -n "$$admin" ] || exit 1; 												\
-		read -r -s -p "[WordPress] author password: " author || exit 1; echo; 		\
-		[ -n "$$author" ] || exit 1; 												\
+		read -r -s -p "[WordPress] user  password: " user || exit 1; echo; 		\
+		[ -n "$$user" ] || exit 1; 												\
 		umask 077; 																	\
 		printf "WP_ADMIN_PASSWORD=%q\nWP_USER_PASSWORD=%q\n" 						\
-		"$$admin" "$$author" > $(SECRETS_DIR)/credentials.txt; 						\
+		"$$admin" "$$user" > $(SECRETS_DIR)/credentials.txt; 						\
 	fi
 
 # ------------------------ MANAGE DOCKER CONTAINERS ------------------------

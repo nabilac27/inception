@@ -360,6 +360,35 @@ Browser --HTTPS--> NGINX --FastCGI--> WordPress / PHP-FPM
 
     </details>
 
+
+     <details>
+    <summary><strong>9. WordPress Roles</strong></summary>
+
+    ---
+
+    - **In This Project**
+
+        ```bash
+        | User Type       | WordPress Role | Permissions                                      |
+        |-----------------|----------------|--------------------------------------------------|
+        | `WP_ADMIN_USER` | Administrator  | Full access to settings, plugins, themes, users  |
+        | `WP_USER`       | Author         | Create, publish, edit, and delete own posts      |
+        ```
+
+    - **WordPress Default Roles**
+  
+        ```bash
+        | Role          | Permissions                                  | Post Approval Required |
+        |---------------|----------------------------------------------|------------------------|
+        | Administrator | Full control over the website                | No                     |
+        | Editor        | Manage and publish all users' posts          | No                     |
+        | Author        | Create, publish, and manage own posts        | No                     |
+        | Contributor   | Write and edit own posts, but cannot publish | Yes                    |
+        | Subscriber    | Read content and manage own profile          | Cannot create posts    |
+        ```
+
+    </details>
+
     ---
 
     ### Basic Syntax
