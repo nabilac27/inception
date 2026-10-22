@@ -23,7 +23,7 @@ Inception is a 42 system administration project that deploys a WordPress website
 
 - **Services** 
   
-  NGINX (TLS 1.2/1.3), WordPress/PHP-FPM, MariaDB, Redis (object cache), Adminer (database administration). NGINX also serves a static bonus website.
+  NGINX (TLS 1.2/1.3), WordPress/PHP-FPM, MariaDB, Adminer (database administration). NGINX also serves a static bonus website.
 
 - **Sources**
   
@@ -128,7 +128,6 @@ Inception is a 42 system administration project that deploys a WordPress website
 - [WordPress documentation](https://wordpress.org/documentation/) and [WP-CLI commands](https://developer.wordpress.org/cli/commands/)
 - [MariaDB documentation](https://mariadb.com/kb/en/documentation/)
 - [PHP-FPM documentation](https://www.php.net/manual/en/install.fpm.php)
-- [Redis documentation](https://redis.io/docs/latest/)
 - [Adminer documentation](https://www.adminer.org/en/)
 - [Debian documentation](https://www.debian.org/doc/)
 

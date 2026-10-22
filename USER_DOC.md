@@ -10,7 +10,6 @@
     | NGINX          | HTTPS web server using TLS 1.2/1.3                 |
     | WordPress      | Website and content management system with PHP-FPM |
     | MariaDB        | Stores WordPress database data                     |
-    | Redis          | WordPress object caching                           |
     | Adminer        | Web-based MariaDB administration                   |
     | Static Website | Additional website served by NGINX                 |
     ```
@@ -80,12 +79,6 @@
     # Check WordPress database
     docker exec wordpress wp db check --allow-root
 
-    # Check Redis
-    docker exec redis redis-cli ping
-
-    # Check WordPress Redis cache
-    docker exec wordpress wp redis status --allow-root
-
     # Verify NGINX configuration
     docker exec nginx nginx -t
 
@@ -93,7 +86,7 @@
     curl -kI https://nchairun.42.fr
     ```
 
-- MariaDB should respond with `mysqld is alive`, Redis with `PONG`, and HTTPS with a valid HTTP response.
+- MariaDB should respond with `mysqld is alive`, and HTTPS with a valid HTTP response.
 
 - You can also check WordPress and Adminer by opening their administration URLs and logging in.
 

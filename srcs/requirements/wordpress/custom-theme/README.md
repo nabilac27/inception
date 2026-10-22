@@ -62,7 +62,6 @@ The `index.php` template can load either `HTML` layout. However, `HTML` alone ca
 Browser --HTTPS--> NGINX --FastCGI--> WordPress / PHP-FPM
                     |                       |
                     |                       +--> MariaDB (content and users)
-                    |                       +--> Redis (object cache)
                     +--> Adminer (reverse proxy)
                     +--> Static website (HTML/CSS)
 ```
@@ -70,7 +69,6 @@ Browser --HTTPS--> NGINX --FastCGI--> WordPress / PHP-FPM
 - **NGINX** handles TLS 1.2/1.3, routes WordPress requests, and exposes bonus web paths.
 - **WordPress/PHP-FPM** renders the theme and manages posts, users, and comments.
 - **MariaDB** persists WordPress data.
-- **Redis** provides WordPress object caching; it has no public web interface.
 - **Docker Compose** runs the services on the project network with persistent storage.
 
 

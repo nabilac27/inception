@@ -789,8 +789,3 @@ body.login #login_error * {
     font-size: 0.8rem;
     color: #777;
 }
-
-/* ------------------------ REDIS CARD ------------------------ */
-.bonus-card-redis {
-    cursor: default;
-}

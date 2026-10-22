@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/18 12:26:40 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/22 16:35:43 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,8 +16,9 @@
 
 NAME         = inception
 SHELL        = /bin/bash
-COMPOSE      = docker compose -f srcs/docker-compose.yml
+COMPOSE      = docker compose --env-file srcs/.env -f srcs/docker-compose.yml
 DATA_DIR     = $(HOME)/data
+ENV_FILE     = srcs/.env
 
 SECRETS_DIR  = secrets
 SECRET_FILES = $(SECRETS_DIR)/db_root_password.txt \
@@ -73,12 +74,17 @@ volumes:
 	mkdir -p	$(DATA_DIR)/mariadb		$(DATA_DIR)/wordpress
 
 build:
-	$(COMPOSE)	build
+	$(COMPOSE)	build 
 
 up: secrets volumes
-	$(COMPOSE)	up -d --build
+	@if [ ! -f "$(ENV_FILE)" ]; then 				  \
+		echo "WARNING: No .env file found"; 	      \
+	else 											  \
+		$(MAKE) --no-print-directory secrets volumes; \
+		$(COMPOSE) up -d --build; 					  \
+	fi
 
-down:
+down: check-env
 	$(COMPOSE)	down
 
 # **************************************************************************** #
@@ -94,11 +100,15 @@ clean:
 	$(COMPOSE)	down --remove-orphans
 
 fclean:
-	$(COMPOSE) down --rmi all --volumes --remove-orphans
+	@if [ -f $(ENV_FILE) ]; then 							    \
+		$(COMPOSE) down --rmi all --volumes --remove-orphans;   \
+	else 										    			\
+		echo "WARNING: $(ENV_FILE) missing";					\
+	fi
 	if [ -d /goinfre ]; then 									\
-		echo "42 PC: skipping persistent data deletion"; 		\
+		echo "42 PC  : skipping persistent data deletion"; 		\
 	else 														\
-		echo "VM: deleting persistent data"; 					\
+		echo "VM     : deleting persistent data"; 				\
 		sudo rm -rf $(DATA_DIR)/mariadb $(DATA_DIR)/wordpress; 	\
 	fi
 	rm -f $(SECRET_FILES)
@@ -117,7 +127,7 @@ eval-clean:
 	docker volume rm  $$(docker volume ls -q); 				\
 	docker network rm $$(docker network ls -q) 2>/dev/null
 
-check: check-mariadb check-wordpress check-nginx check-adminer check-redis check-static
+check: check-mariadb check-wordpress check-nginx check-adminer check-static
 
 check-tls:
 	$(COMPOSE) exec -T nginx nginx -T 2>&1 | grep ssl_protocols
@@ -141,11 +151,6 @@ check-adminer:
 	$(COMPOSE) exec -T adminer php -v
 	curl -kfsS -o /dev/null -w "Adminer: %{http_code}\n" \
 		https://localhost:443/adminer/
-
-check-redis:
-	$(COMPOSE) exec -T redis redis-cli ping
-	$(COMPOSE) exec -T wordpress wp redis status \
-		--allow-root --path=/var/www/html
 
 check-static:
 	curl -kfsS -o /dev/null -w "Static: %{http_code}\n" \

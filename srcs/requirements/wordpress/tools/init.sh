@@ -81,17 +81,6 @@ wp option update siteurl "https://${DOMAIN_NAME}" --allow-root
 # ------------------------ CONFIGURE CUSTOM THEME ------------------------------------------
 bash /usr/local/share/custom-theme/tools/init.sh
 
-# ------------------------ INSTALL REDIS OBJECT CACHE --------------------------------------
-wp config set       WP_REDIS_HOST   "redis" --allow-root
-wp config set       WP_REDIS_PORT   6379    --allow-root --raw 
-
-if ! wp plugin is-installed redis-cache --allow-root; then
-    wp plugin install redis-cache       --allow-root
-fi
-
-wp plugin activate  redis-cache             --allow-root --quiet
-wp redis  enable                            --allow-root
-
 # ------------------------ UPDATE WORDPRESS ADMIN, USER  ------------------------------------
 wp user update "$WP_ADMIN_USER"           \
     --user_pass="$WP_ADMIN_PASSWORD"      \

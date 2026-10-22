@@ -45,30 +45,8 @@ get_header();
                     A static website served by NGINX using
                     HTML and CSS.
                 </p>
-
             </a>
-
-            <!-- ------------------------ REDIS ------------------------ -->
-            <div class="bonus-card bonus-card-redis">
-
-                <span class="bonus-number">
-                    03 / OBJECT CACHING
-                </span>
-
-                <h2>Redis</h2>
-
-                <p>
-                    An in-memory caching service that improves
-                    WordPress performance by caching frequently
-                    accessed data.
-                </p>
-
-                <span class="bonus-note">
-                    Internal Docker service · No web interface
-                </span>
-
-            </div>
-
+    
         </div>
 
     </section>

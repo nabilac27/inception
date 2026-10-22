@@ -82,7 +82,7 @@
 
 ## 3. Container and Volume Management
 
-- The stack contains NGINX, WordPress, MariaDB, Redis, Adminer. The static website is served by NGINX.
+- The stack contains NGINX, WordPress, MariaDB, Adminer. The static website is served by NGINX.
   
     ```bash
     # List container status
