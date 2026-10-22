@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/22 16:35:43 by nchairun         ###   ########.fr        #
+#    Updated: 2026/10/22 16:46:24 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -57,13 +57,17 @@ secrets:
 	then 																			\
 		read -r -s -p "[WordPress] admin password : " admin || exit 1; echo; 		\
 		[ -n "$$admin" ] || exit 1; 												\
-		read -r -s -p "[WordPress] user  password: " user || exit 1; echo; 		\
-		[ -n "$$user" ] || exit 1; 												\
+		read -r -s -p "[WordPress] user  password : " user || exit 1; echo; 		\
+		[ -n "$$user" ] || exit 1; 													\
 		umask 077; 																	\
 		printf "WP_ADMIN_PASSWORD=%q\nWP_USER_PASSWORD=%q\n" 						\
 		"$$admin" "$$user" > $(SECRETS_DIR)/credentials.txt; 						\
 	fi
 
+check-env:
+	@if [ ! -f "$(ENV_FILE)" ]; then 		\
+		echo "WARNING: No .env file found"; \
+	fi
 # ------------------------ MANAGE DOCKER CONTAINERS ------------------------
 # volumes : create directories for persistent data
 # build   : creates Docker images
@@ -73,15 +77,13 @@ secrets:
 volumes:
 	mkdir -p	$(DATA_DIR)/mariadb		$(DATA_DIR)/wordpress
 
-build:
+build: check-env
 	$(COMPOSE)	build 
 
-up: secrets volumes
-	@if [ ! -f "$(ENV_FILE)" ]; then 				  \
-		echo "WARNING: No .env file found"; 	      \
-	else 											  \
-		$(MAKE) --no-print-directory secrets volumes; \
-		$(COMPOSE) up -d --build; 					  \
+up: check-env
+	@if [ -f "$(ENV_FILE)" ]; then						\
+		$(MAKE) --no-print-directory secrets volumes && \
+		$(COMPOSE) up -d --build; 						\
 	fi
 
 down: check-env
@@ -96,14 +98,12 @@ down: check-env
 # re     : completely reset and rebuild the infrastructure, persistent data stay
 # .PHONY : declare targets that are not actual files
 # -------------------------------------------------------------------------
-clean:
+clean: check-env
 	$(COMPOSE)	down --remove-orphans
 
-fclean:
+fclean: check-env
 	@if [ -f $(ENV_FILE) ]; then 							    \
 		$(COMPOSE) down --rmi all --volumes --remove-orphans;   \
-	else 										    			\
-		echo "WARNING: $(ENV_FILE) missing";					\
 	fi
 	if [ -d /goinfre ]; then 									\
 		echo "42 PC  : skipping persistent data deletion"; 		\
