@@ -12,7 +12,7 @@ then
     exit 1
 fi
 
-# ------------------------ VALIDATE CREDENTIALS -----------------------------------
+# ------------------------ VALIDATE CREDENTIALS --------------------------------------------
 case "$DB_PASSWORD" in
     *[!a-zA-Z0-9_@%+=.,:-]*)
         echo "Error: Invalid characters in database password." >&2

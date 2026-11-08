@@ -6,7 +6,7 @@
 #    By: nchairun <nchairun@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/11 18:50:34 by nchairun          #+#    #+#              #
-#    Updated: 2026/10/22 16:46:24 by nchairun         ###   ########.fr        #
+#    Updated: 2026/11/08 20:03:40 by nchairun         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,6 +16,7 @@
 
 NAME         = inception
 SHELL        = /bin/bash
+
 COMPOSE      = docker compose --env-file srcs/.env -f srcs/docker-compose.yml
 DATA_DIR     = $(HOME)/data
 ENV_FILE     = srcs/.env

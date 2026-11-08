@@ -89,7 +89,7 @@ Inception is a 42 system administration project that deploys a WordPress website
      <VM_IP> nchairun.42.fr
      ```
 
-   - Ensure the VM is accessible from the host and port `443` is open.
+
 
 4. From the repository root, run:
    ```bash
@@ -97,7 +97,9 @@ Inception is a 42 system administration project that deploys a WordPress website
    ```
    The Makefile creates persistent data directories, prompts for missing passwords, builds the images, and starts the containers.
 
-5. Visit **https://nchairun.42.fr**. A browser warning is expected because the TLS certificate is self-signed.
+5. Visit **https://nchairun.42.fr**. 
+   
+   A browser warning is expected because the TLS certificate is self-signed.
 
 - **Verification:**
 

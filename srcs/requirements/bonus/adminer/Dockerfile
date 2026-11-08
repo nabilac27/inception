@@ -1,17 +1,17 @@
 FROM    debian:bookworm
 
-RUN     apt-get update      && \
-        apt-get install -y     \
-        apache2                \
-        php8.2                 \
-        libapache2-mod-php8.2  \
-        php8.2-mysql           \
-        curl                && \
+RUN     apt-get update                             && \
+        apt-get install -y                            \
+        apache2                                       \
+        php8.2                                        \
+        libapache2-mod-php8.2                         \
+        php8.2-mysql                                  \
+        curl                                       && \
         curl -fsSL https://www.adminer.org/latest.php \
-        -o /var/www/html/index.php  &&    \
-        rm -f /var/www/html/index.html && \
-        apt-get purge -y curl       &&    \
-        apt-get autoremove -y       &&    \
+        -o /var/www/html/index.php                 && \
+        rm -f /var/www/html/index.html             && \
+        apt-get purge -y curl                      && \
+        apt-get autoremove -y                      && \
         rm -rf /var/lib/apt/lists/*
 
 EXPOSE  80
