@@ -44,7 +44,7 @@ services:
         context: .
         dockerfile: requirements/nginx/Dockerfile
     ports:
-      - "8443:443"  # VM = 443
+      - "443:443"  # VM = 443
     volumes:
       - wordpress_data:/var/www/html:ro
     networks:
